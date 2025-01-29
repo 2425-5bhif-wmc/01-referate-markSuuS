@@ -1,4 +1,34 @@
-= Index test page
+= SmallRye Health in Quarkus
 ifndef::imagesdir[:imagesdir: images]
 
-image::img.png[]
+== Einführung
+
+=== Was ist Health Monitoring?
+[quote]
+Unter Health Monitoring versteht man den Prozess der Überprüfung des Zustands einer Anwendung,
+um sicherzustellen, dass sie ordnungsgemäß und zuverlässig funktioniert.
+Dabei wird die Fähigkeit der Anwendung verfolgt, zu starten, auszuführen und Datenverkehr effektiv zu verarbeiten.
+Die Health Monitoring ist ein Eckpfeiler des modernen Anwendungsmanagements,
+insbesondere in verteilten und Cloud-nativen Umgebungen.
+
+=== Warum ist Health Monitoring wichtig?
+* *Reliability* (Zuverlässigkeit): Erkennt Probleme frühzeitig, um Ausfallzeiten zu verhindern.
+* *Scalability* (Skalierbarkeit): Stellt sicher, dass Systeme skaliert werden können, ohne dass kritische Komponenten beschädigt werden.
+* *Integration*: Funktioniert mit Tools wie Kubernetes, um die Wiederherstellung zu automatisieren und die Ressourcennutzung zu verbessern. -> *Probes*
+
+== Was ist SmallRye Health?
+* Implementierung von Eclipse MircoProfile Health für Maven-Projekte.
+
+.pom.xml
+[source, xml]
+----
+<dependency>
+    <groupId>io.quarkus</groupId>
+    <artifactId>quarkus-smallrye-health</artifactId>
+</dependency>
+----
+
+== Quellen und Links
+* https://quarkus.io/guides/smallrye-health[quarkus.io: SmallRye Health]
+* https://github.com/smallrye/smallrye-health[GitHub: SmallRye Health]
+* https://github.com/eclipse/microprofile-health/[GitHub: Eclipse MicroProfile Health]
