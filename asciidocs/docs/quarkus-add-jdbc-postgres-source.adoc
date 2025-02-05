@@ -1,0 +1,48 @@
+= Quarkus: JDBC Datasource hinzufügen
+
+_mit PostgreSQL als Beispiel_
+
+== PostgreSQL 17 in Docker starten
+
+.postgres-run-in-docker.sh
+[source, bash]
+----
+docker run --rm \
+           --name postgres-db \
+           -e POSTGRES_USER=app \
+           -e POSTGRES_PASSWORD=app \
+           -e POSTGRES_DB=db \
+           -v ${PWD}/db-postgres/db:/var/lib/postgresql/data \
+           -p 5432:5432 \
+           postgres:17-alpine
+----
+
+== datasource.txt für integrierten Datenbank-Explorer
+
+.datasource.txt
+[source, text]
+----
+#DataSourceSettings#
+#LocalDataSource: db@localhost
+#BEGIN#
+<data-source source="LOCAL" name="db@localhost" uuid="6e303d8d-ca35-4f08-a10b-ea9a45ee2aa2"><database-info product="PostgreSQL" version="15.2" jdbc-version="4.2" driver-name="PostgreSQL JDBC Driver" driver-version="42.5.0" dbms="POSTGRES" exact-version="15.2" exact-driver-version="42.5"><identifier-quote-string>&quot;</identifier-quote-string></database-info><case-sensitivity plain-identifiers="lower" quoted-identifiers="exact"/><driver-ref>postgresql</driver-ref><synchronize>true</synchronize><jdbc-driver>org.postgresql.Driver</jdbc-driver><jdbc-url>jdbc:postgresql://localhost:5432/db</jdbc-url><secret-storage>master_key</secret-storage><user-name>app</user-name><schema-mapping><introspection-scope><node kind="database" qname="@"><node kind="schema" qname="@"/></node></introspection-scope></schema-mapping><working-dir>$ProjectFileDir$</working-dir></data-source>
+#END#
+----
+TIP: Aus Sicherheitsgründen muss im Popup das Passwort erneut eingegeben werden.
+
+== application.properties um folgende Properties erweitern
+
+.application.properties
+[source, properties]
+----
+# datasource configuration
+quarkus.datasource.db-kind = postgresql
+quarkus.datasource.username = app
+quarkus.datasource.password = app
+quarkus.datasource.jdbc.url = jdbc:postgresql://localhost:5432/db
+
+# drop and create the database at startup (use `update` to only update the schema)
+quarkus.hibernate-orm.database.generation=drop-and-create
+----
+
+== Läuft :-)

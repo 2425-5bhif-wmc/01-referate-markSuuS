@@ -98,9 +98,67 @@ Der Import der `smallrye-health` Extension stellt direkt 3 REST-Endpunkte bereit
 
 TIP: Mit `GET /q/health` werden alle Health-Checks angezeigt. Du kannst diese Endpoints nun ausprobieren.
 
+Anzeige aller Checks:
+[%collapsible]
+====
+
+.`/q/health`
+[source, json]
+----
+{
+    "status": "UP", <1>
+    "checks": [ <2>
+        {
+            "name": "alive",
+            "status": "UP"
+        }
+    ]
+}
+----
+
+.`/q/health/live`
+[source, json]
+----
+{
+    "status": "UP", <1>
+    "checks": [ <2>
+        {
+            "name": "alive",
+            "status": "UP"
+        }
+    ]
+}
+----
+
+.`/q/health/ready`
+[source, json]
+----
+{
+    "status": "UP", <1>
+    "checks": [ <2>
+    ]
+}
+----
+
+.`/q/health/started`
+[source, json]
+----
+{
+    "status": "UP", <1>
+    "checks": [ <2>
+    ]
+}
+----
+1. `status` gibt an, ob alle Health-Checks erfolgreich waren.
+2. `checks` ist ein Array von individuellen Health-Checks (dazu später mehr).
+
+====
+
 === Health Check für Datenbank hinzufügen
 
-NOTE: Wenn wir zu unserem Projekt eine JDBC-Datasource hinzufügen, wird automatisch ein Health Check erstellt, der die Verbindung zur Datenbank prüft.
+NOTE: Wenn wir zu unserem Projekt eine JDBC-Datasource hinzufügen, wird automatisch ein Health Check erstellt, der die Verbindung zur Datenbank prüft. Hier wird dies mit einer PostgreSQL-DB demonstriert.
+
+Siehe auch:
 
 
 
