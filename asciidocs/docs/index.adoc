@@ -154,11 +154,57 @@ Anzeige aller Checks:
 
 ====
 
-=== Health Check für Datenbank hinzufügen
+=== Automatischer Health-Check für JDBC-Verbindungen
 
-NOTE: Wenn wir zu unserem Projekt eine JDBC-Datasource hinzufügen, wird automatisch ein Health Check erstellt, der die Verbindung zur Datenbank prüft. Hier wird dies mit einer PostgreSQL-DB demonstriert.
+NOTE: Wenn wir zu unserem Projekt eine JDBC-Datasource hinzufügen, wird automatisch ein Health Check (Readiness) erstellt, der die Verbindung zur Datenbank prüft. Hier wird dies mit einer PostgreSQL-DB demonstriert.
 
-Siehe auch:
+Siehe auch: link:quarkus-add-jdbc-postgres-source.adoc[Quarkus: JDBC Datasource hinzufügen - mit PostgreSQL als Beispiel]
+
+*Bei den Readiness-Checks ist nun auch sichtbar, ob die Datenbank-Verbindung aufrecht ist:*
+
+[%collapsible]
+====
+.`/q/health/ready`
+[source, json]
+----
+{
+    "status": "UP",
+    "checks": [
+        {
+            "name": "Database connections health check",
+            "status": "UP",
+            "data": {
+                "<default>": "UP"
+            }
+        }
+    ]
+}
+----
+====
+
+*Stoppe nun die Datenbank und sieh dir die Readiness-Checks erneut an:*
+
+[%collapsible]
+====
+.`/q/health/ready`
+[source, json]
+----
+{
+    "status": "DOWN",
+    "checks": [
+        {
+            "name": "Database connections health check",
+            "status": "DOWN",
+            "data": {
+                "<default>": "Unable to execute the validation check for the default DataSource: Connection to localhost:5432 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections."
+            }
+        }
+    ]
+}
+----
+====
+
+=== Eigene Health-Checks erstellen
 
 
 

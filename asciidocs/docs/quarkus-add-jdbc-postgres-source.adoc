@@ -45,4 +45,40 @@ quarkus.datasource.jdbc.url = jdbc:postgresql://localhost:5432/db
 quarkus.hibernate-orm.database.generation=drop-and-create
 ----
 
-== Läuft :-)
+== JDBC-Treiber hinzufügen
+
+.pom.xml
+[source, xml]
+----
+<dependency>
+    <groupId>io.quarkus</groupId>
+    <artifactId>quarkus-jdbc-postgresql</artifactId>
+</dependency>
+----
+
+oder
+
+[source, bash]
+----
+./mvnw quarkus:add-extension -Dextensions="io.quarkus:quarkus-jdbc-postgresql"
+----
+
+== Hibernate ORM mit Panache hinzufügen
+
+.pom.xml
+[source, xml]
+----
+<dependency>
+    <groupId>io.quarkus</groupId>
+    <artifactId>quarkus-hibernate-orm-panache</artifactId>
+</dependency>
+----
+
+oder
+
+[source, bash]
+----
+./mvnw quarkus:add-extension -Dextensions="io.quarkus:quarkus-hibernate-orm-panache"
+----
+
+== Läuft. Nun kannst du JPA Entities persistieren :-)
