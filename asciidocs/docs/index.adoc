@@ -1,5 +1,11 @@
 = SmallRye Health in Quarkus
 ifndef::imagesdir[:imagesdir: images]
+:icons: font
+:experimental:
+:sectnums:
+:toc:
+:toclevels: 5
+:experimental:
 
 == Einführung
 
@@ -16,8 +22,43 @@ insbesondere in verteilten und Cloud-nativen Umgebungen.
 * *Scalability* (Skalierbarkeit): Stellt sicher, dass Systeme skaliert werden können, ohne dass kritische Komponenten beschädigt werden.
 * *Integration*: Funktioniert mit Tools wie Kubernetes, um die Wiederherstellung zu automatisieren und die Ressourcennutzung zu verbessern. -> *Probes*
 
-== Was ist SmallRye Health?
-* Implementierung von Eclipse MircoProfile Health für Maven-Projekte.
+=== Eclipse MicroProfile Health
+* Spezifikation im MicroProfile-Ökosystem, bietet standardisierte Möglichkeit zur Implementierung von Health-Checks
+
+=== SmallRye Health
+* konkrete Implementierung der Eclipse MicroProfile Health API
+* von Quarkus verwendet
+
+== Praxisbeispiel: SmallRye Health in Quarkus für Probes in Kubernetes
+
+=== Standard Health Checks ausprobieren
+
+==== Maven-Projekt erstellen
+
+[%collapsible]
+====
+[source, bash]
+----
+mvn io.quarkus.platform:quarkus-maven-plugin:3.18.1:create \
+    -DprojectGroupId==at.htlleonding \
+    -DprojectArtifactId==microprofile-health-demo \
+    -Dextensions=='smallrye-health' \
+    -DnoCode
+cd microprofile-health-demo
+----
+====
+
+==== Oder Extension zu bestehendem Projekt hinzufügen
+
+[%collapsible]
+====
+.Maven-Wrapper
+[source, bash]
+----
+./mvnw quarkus:add-extension -Dextensions=='smallrye-health'
+----
+
+oder
 
 .pom.xml
 [source, xml]
@@ -27,6 +68,41 @@ insbesondere in verteilten und Cloud-nativen Umgebungen.
     <artifactId>quarkus-smallrye-health</artifactId>
 </dependency>
 ----
+====
+
+==== Maven-Projekt starten
+
+[source, bash]
+----
+./mvnw clean quarkus:dev
+----
+
+==== Standard-Endpoints
+
+Der Import der `smallrye-health` Extension stellt direkt 3 REST-Endpunkte bereit:
+
+===== Liveness (Live)
+* `GET /q/health/live`
+* Zeigt an, dass die Anwendung ausgeführt wird und kein kritischer Fehler aufgetreten ist, der einen Neustart erforderlich macht.
+* Falls die JVM oder der Container abstürzt oder sich in einem fehlerhaften Zustand befindet, schlägt der Liveness-Check fehl.
+
+===== Readiness (Ready)
+* `GET /q/health/ready`
+* Zeigt an, dass die Anwendung zur Bearbeitung von Anfragen bereit und voll funktionsfähig ist.
+* Falls Quarkus eine Abhängigkeit erkennt (z. B. Datenbank oder externe API), kann es automatisch bestimmen, dass die Anwendung nicht bereit ist, falls diese Abhängigkeit nicht verfügbar ist.
+
+===== Started
+* `GET /q/health/started`
+* Zeigt an, ob der vollständige Startprozess abgeschlossen ist.
+* Dies geschieht, nachdem alle Startup-Beans und StartupEvent-Listener vollständig ausgeführt wurden.
+
+TIP: Mit `GET /q/health` werden alle Health-Checks angezeigt. Du kannst diese Endpoints nun ausprobieren.
+
+=== Health Check für Datenbank hinzufügen
+
+NOTE: Wenn wir zu unserem Projekt eine JDBC-Datasource hinzufügen, wird automatisch ein Health Check erstellt, der die Verbindung zur Datenbank prüft.
+
+
 
 == Quellen und Links
 * https://quarkus.io/guides/smallrye-health[quarkus.io: SmallRye Health]
