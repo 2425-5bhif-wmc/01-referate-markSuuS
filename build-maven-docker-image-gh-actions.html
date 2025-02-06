@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 2.0.20">
 <link rel="icon" type="image/png" href="themes/favicon.png">
-<title>Quarkus: JDBC Datasource hinzufügen</title>
+<title>GitHub Actions: Docker Image einer Maven Applikation bauen</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /*! Asciidoctor default stylesheet | MIT License | https://asciidoctor.org */
@@ -560,138 +560,134 @@ pre.rouge .gs {
 </head>
 <body class="article toc2 toc-left">
 <div id="header">
-<h1>Quarkus: JDBC Datasource hinzufügen</h1>
+<h1>GitHub Actions: Docker Image einer Maven Applikation bauen</h1>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
-<li><a href="#_postgresql_17_in_docker_starten">1. PostgreSQL 17 in Docker starten</a></li>
-<li><a href="#_datasource_txt_für_integrierten_datenbank_explorer">2. datasource.txt für integrierten Datenbank-Explorer</a></li>
-<li><a href="#_application_properties_um_folgende_properties_erweitern">3. application.properties um folgende Properties erweitern</a></li>
-<li><a href="#_jdbc_treiber_hinzufügen">4. JDBC-Treiber hinzufügen</a></li>
-<li><a href="#_hibernate_orm_mit_panache_hinzufügen">5. Hibernate ORM mit Panache hinzufügen</a></li>
-<li><a href="#_läuft_nun_ist_es_möglich_mittels_panache_jpa_entities_in_der_postgresql_datenbank_zu_persistieren">6. Läuft. Nun ist es möglich mittels Panache JPA Entities in der PostgreSQL-Datenbank zu persistieren</a></li>
+<li><a href="#_dockerfile">1. Dockerfile</a></li>
+<li><a href="#_workflow_datei">2. Workflow-Datei</a></li>
 </ul>
 </div>
 </div>
 <div id="content">
-<div id="preamble">
+<div class="sect1">
+<h2 id="_dockerfile"><a class="anchor" href="#_dockerfile"></a>1. Dockerfile</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p><em>mit PostgreSQL als Beispiel</em></p>
+<p>Wir verwenden folgendes Dockerfile für unsere Maven-Applikation und speichern es in <code>src/main/docker</code></p>
 </div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_postgresql_17_in_docker_starten"><a class="anchor" href="#_postgresql_17_in_docker_starten"></a>1. PostgreSQL 17 in Docker starten</h2>
-<div class="sectionbody">
 <div class="listingblock">
-<div class="title">postgres-run-in-docker.sh</div>
+<div class="title">&lt;maven-root&gt;/src/main/docker/Dockerfile</div>
 <div class="content">
-<pre class="rouge highlight"><code data-lang="bash">docker run <span class="nt">--rm</span> <span class="se">\</span>
-           <span class="nt">--name</span> postgres-db <span class="se">\</span>
-           <span class="nt">-e</span> <span class="nv">POSTGRES_USER</span><span class="o">=</span>app <span class="se">\</span>
-           <span class="nt">-e</span> <span class="nv">POSTGRES_PASSWORD</span><span class="o">=</span>app <span class="se">\</span>
-           <span class="nt">-e</span> <span class="nv">POSTGRES_DB</span><span class="o">=</span>db <span class="se">\</span>
-           <span class="nt">-v</span> <span class="k">${</span><span class="nv">PWD</span><span class="k">}</span>/db-postgres/db:/var/lib/postgresql/data <span class="se">\</span>
-           <span class="nt">-p</span> 5432:5432 <span class="se">\</span>
-           postgres:17-alpine</code></pre>
-</div>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_datasource_txt_für_integrierten_datenbank_explorer"><a class="anchor" href="#_datasource_txt_für_integrierten_datenbank_explorer"></a>2. datasource.txt für integrierten Datenbank-Explorer</h2>
-<div class="sectionbody">
-<div class="listingblock">
-<div class="title">datasource.txt</div>
-<div class="content">
-<pre class="rouge highlight"><code data-lang="text">#DataSourceSettings#
-#LocalDataSource: db@localhost
-#BEGIN#
-&lt;data-source source="LOCAL" name="db@localhost" uuid="6e303d8d-ca35-4f08-a10b-ea9a45ee2aa2"&gt;&lt;database-info product="PostgreSQL" version="15.2" jdbc-version="4.2" driver-name="PostgreSQL JDBC Driver" driver-version="42.5.0" dbms="POSTGRES" exact-version="15.2" exact-driver-version="42.5"&gt;&lt;identifier-quote-string&gt;&amp;quot;&lt;/identifier-quote-string&gt;&lt;/database-info&gt;&lt;case-sensitivity plain-identifiers="lower" quoted-identifiers="exact"/&gt;&lt;driver-ref&gt;postgresql&lt;/driver-ref&gt;&lt;synchronize&gt;true&lt;/synchronize&gt;&lt;jdbc-driver&gt;org.postgresql.Driver&lt;/jdbc-driver&gt;&lt;jdbc-url&gt;jdbc:postgresql://localhost:5432/db&lt;/jdbc-url&gt;&lt;secret-storage&gt;master_key&lt;/secret-storage&gt;&lt;user-name&gt;app&lt;/user-name&gt;&lt;schema-mapping&gt;&lt;introspection-scope&gt;&lt;node kind="database" qname="@"&gt;&lt;node kind="schema" qname="@"/&gt;&lt;/node&gt;&lt;/introspection-scope&gt;&lt;/schema-mapping&gt;&lt;working-dir&gt;$ProjectFileDir$&lt;/working-dir&gt;&lt;/data-source&gt;
-#END#</code></pre>
-</div>
-</div>
-<div class="admonitionblock tip">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-tip" title="Tip"></i>
-</td>
-<td class="content">
-Aus Sicherheitsgründen muss im Popup das Passwort erneut eingegeben werden.
-</td>
-</tr>
-</table>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_application_properties_um_folgende_properties_erweitern"><a class="anchor" href="#_application_properties_um_folgende_properties_erweitern"></a>3. application.properties um folgende Properties erweitern</h2>
-<div class="sectionbody">
-<div class="listingblock">
-<div class="title">application.properties</div>
-<div class="content">
-<pre class="rouge highlight"><code data-lang="properties"><span class="c"># datasource configuration
-</span><span class="py">quarkus.datasource.db-kind</span> <span class="p">=</span> <span class="s">postgresql</span>
-<span class="py">quarkus.datasource.username</span> <span class="p">=</span> <span class="s">app</span>
-<span class="py">quarkus.datasource.password</span> <span class="p">=</span> <span class="s">app</span>
-<span class="py">quarkus.datasource.jdbc.url</span> <span class="p">=</span> <span class="s">jdbc:postgresql://localhost:5432/db</span>
+<pre class="rouge highlight"><code data-lang="dockerfile"><span class="k">FROM</span><span class="s"> eclipse-temurin:21-jre</span>
 
-<span class="c"># drop and create the database at startup (use `update` to only update the schema)
-</span><span class="py">quarkus.hibernate-orm.database.generation</span><span class="p">=</span><span class="s">drop-and-create</span></code></pre>
+<span class="k">RUN </span><span class="nb">mkdir</span> <span class="nt">-p</span> /opt/application
+<span class="k">COPY</span><span class="s"> target/*-runner.jar /opt/application/backend.jar</span>
+<span class="k">WORKDIR</span><span class="s"> /opt/application</span>
+<span class="k">CMD</span><span class="s"> ["java", "-jar", "backend.jar"]</span></code></pre>
 </div>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_jdbc_treiber_hinzufügen"><a class="anchor" href="#_jdbc_treiber_hinzufügen"></a>4. JDBC-Treiber hinzufügen</h2>
+<h2 id="_workflow_datei"><a class="anchor" href="#_workflow_datei"></a>2. Workflow-Datei</h2>
 <div class="sectionbody">
-<div class="listingblock">
-<div class="title">pom.xml</div>
-<div class="content">
-<pre class="rouge highlight"><code data-lang="xml"><span class="nt">&lt;dependency&gt;</span>
-    <span class="nt">&lt;groupId&gt;</span>io.quarkus<span class="nt">&lt;/groupId&gt;</span>
-    <span class="nt">&lt;artifactId&gt;</span>quarkus-jdbc-postgresql<span class="nt">&lt;/artifactId&gt;</span>
-<span class="nt">&lt;/dependency&gt;</span></code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>oder</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="rouge highlight"><code data-lang="bash">./mvnw quarkus:add-extension <span class="nt">-Dextensions</span><span class="o">=</span><span class="s2">"io.quarkus:quarkus-jdbc-postgresql"</span></code></pre>
-</div>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_hibernate_orm_mit_panache_hinzufügen"><a class="anchor" href="#_hibernate_orm_mit_panache_hinzufügen"></a>5. Hibernate ORM mit Panache hinzufügen</h2>
-<div class="sectionbody">
-<div class="listingblock">
-<div class="title">pom.xml</div>
-<div class="content">
-<pre class="rouge highlight"><code data-lang="xml"><span class="nt">&lt;dependency&gt;</span>
-    <span class="nt">&lt;groupId&gt;</span>io.quarkus<span class="nt">&lt;/groupId&gt;</span>
-    <span class="nt">&lt;artifactId&gt;</span>quarkus-hibernate-orm-panache<span class="nt">&lt;/artifactId&gt;</span>
-<span class="nt">&lt;/dependency&gt;</span></code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>oder</p>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Im Root-Verzeichnis des GitHub-Repositories das Verzeichnis <code>.github</code> mit dem Unterverzeichnis <code>workflows</code> erstellen.
+In diesem Ordner kommen alle Workflow-Konfigurationsdateien hinein.</p>
+</li>
+<li>
+<p>Darin ertellen wir eine neue Datei, z.B. <code>build-quarkus-image.yaml</code>.</p>
+</li>
+</ol>
 </div>
 <div class="listingblock">
+<div class="title">.github/workflows/build-quarkus-image.yaml</div>
 <div class="content">
-<pre class="rouge highlight"><code data-lang="bash">./mvnw quarkus:add-extension <span class="nt">-Dextensions</span><span class="o">=</span><span class="s2">"io.quarkus:quarkus-hibernate-orm-panache"</span></code></pre>
-</div>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_läuft_nun_ist_es_möglich_mittels_panache_jpa_entities_in_der_postgresql_datenbank_zu_persistieren"><a class="anchor" href="#_läuft_nun_ist_es_möglich_mittels_panache_jpa_entities_in_der_postgresql_datenbank_zu_persistieren"></a>6. Läuft. Nun ist es möglich mittels Panache JPA Entities in der PostgreSQL-Datenbank zu persistieren</h2>
-<div class="sectionbody">
+<pre class="rouge highlight"><code data-lang="yaml"><span class="na">name</span><span class="pi">:</span> <span class="s">GitHub Actions - Building Docker Images from Maven Project</span>
+<span class="na">run-name</span><span class="pi">:</span> <span class="s">${{ github.actor }} is building Docker Images 🐋 using GitHub Actions 🚀</span>
+<span class="na">on</span><span class="pi">:</span> <span class="pi">[</span><span class="nv">push</span><span class="pi">]</span>
+<span class="na">jobs</span><span class="pi">:</span>
+  <span class="na">build</span><span class="pi">:</span>
+    <span class="na">permissions</span><span class="pi">:</span> <span class="s">write-all</span>
+    <span class="na">runs-on</span><span class="pi">:</span> <span class="s">ubuntu-latest</span>
 
+    <span class="na">steps</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">Make Actor and Repo lowercase</span> <i class="conum" data-value="1"></i><b>(1)</b>
+        <span class="na">run</span><span class="pi">:</span> <span class="pi">|</span>
+          <span class="s">echo "ACTOR_LC=$(echo ${GITHUB_ACTOR} | tr '[:upper:]' '[:lower:]')" &gt;&gt;${GITHUB_ENV}</span>
+          <span class="s">echo "REPO_LC=$(echo ${GITHUB_REPOSITORY} | tr '[:upper:]' '[:lower:]')" &gt;&gt;${GITHUB_ENV}</span>
+
+      <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">Use ACTOR_LC and REPO_LC</span> <i class="conum" data-value="2"></i><b>(2)</b>
+        <span class="na">run</span><span class="pi">:</span> <span class="pi">|</span>
+          <span class="s">echo ${{ env.ACTOR_LC }}</span>
+          <span class="s">echo ${{ env.REPO_LC }}</span>
+
+      <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">Check out repository code</span> <i class="conum" data-value="3"></i><b>(3)</b>
+        <span class="na">uses</span><span class="pi">:</span> <span class="s">actions/checkout@v4</span>
+
+      <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">Set up JDK 21 LTS</span> <i class="conum" data-value="4"></i><b>(4)</b>
+        <span class="na">uses</span><span class="pi">:</span> <span class="s">actions/setup-java@v3</span>
+        <span class="na">with</span><span class="pi">:</span>
+          <span class="na">distribution</span><span class="pi">:</span> <span class="s1">'</span><span class="s">temurin'</span>
+          <span class="na">java-version</span><span class="pi">:</span> <span class="s1">'</span><span class="s">21'</span>
+
+      <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">Build with Maven</span> <i class="conum" data-value="5"></i><b>(5)</b>
+        <span class="na">run</span><span class="pi">:</span> <span class="s">mvn -f microprofile-health-demo/pom.xml clean package -Dmaven.test.skip=true</span>
+
+      <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">Login to GitHub Container Registry</span> <i class="conum" data-value="6"></i><b>(6)</b>
+        <span class="na">uses</span><span class="pi">:</span> <span class="s">docker/login-action@v3</span>
+        <span class="na">with</span><span class="pi">:</span>
+          <span class="na">registry</span><span class="pi">:</span> <span class="s">ghcr.io</span>
+          <span class="na">username</span><span class="pi">:</span> <span class="s">${{ env.ACTOR_LC }}</span>
+          <span class="na">password</span><span class="pi">:</span> <span class="s">${{ secrets.GITHUB_TOKEN }}</span>
+
+      <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">Build and push</span> <i class="conum" data-value="7"></i><b>(7)</b>
+        <span class="na">uses</span><span class="pi">:</span> <span class="s">docker/build-push-action@v5</span>
+        <span class="na">with</span><span class="pi">:</span>
+          <span class="na">context</span><span class="pi">:</span> <span class="s">./microprofile-health-demo</span> <i class="conum" data-value="8"></i><b>(8)</b>
+          <span class="na">file</span><span class="pi">:</span> <span class="s">./microprofile-health-demo/src/main/docker/Dockerfile</span> <i class="conum" data-value="9"></i><b>(9)</b>
+          <span class="na">platforms</span><span class="pi">:</span> <span class="s">linux/amd64</span>
+          <span class="na">push</span><span class="pi">:</span> <span class="kc">true</span>
+          <span class="na">tags</span><span class="pi">:</span> <span class="s">ghcr.io/${{ env.REPO_LC }}/mp-health-demo:latest</span> <i class="conum" data-value="10"></i><b>(10)</b></code></pre>
+</div>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Um Probleme mit Groß-/Kleinschreibung entgegenzuwirken, benutzen wir für den Actor und den Repository-Namen ausschließlich Kleibuchstaben. Diese werden als Umgebungsvariablen gespeichert.</p>
+</li>
+<li>
+<p>Test-Ausgabe des Actors und des Repositories.</p>
+</li>
+<li>
+<p>Das Repository wird hier auf den Runner ausgecheckt.</p>
+</li>
+<li>
+<p>Am Runner wird Temurin 21 LTS installiert</p>
+</li>
+<li>
+<p>Hier wird ein Package aus dem Maven-Projekt erstellt. Hierbei ist aufzupassen, den Pfad zur <code>pom.xml</code> richtig zu setzen.</p>
+</li>
+<li>
+<p>Anmeldung in der GitHub Container Registry mit unseren GitHub-Credentials.</p>
+</li>
+<li>
+<p>Hier wird das Docker Image gebaut und in die Registry gepusht. Dabei gibt es einiges zu beachten:</p>
+</li>
+<li>
+<p>Als <code>context</code> muss das Root-Verzeichnis des Maven-Projektes angegeben werden.</p>
+</li>
+<li>
+<p>Als <code>file</code> wird das Dockerfile des Maven-Projektes angegeben (normalerweise in <code>src/main/docker</code>)</p>
+</li>
+<li>
+<p>Hier wird festgelegt, wohin genau das Image gepusht werden soll (normalerweise im Repository des Projektes).</p>
+</li>
+</ol>
+</div>
 </div>
 </div>
 </div>

@@ -577,6 +577,7 @@ pre.rouge .gs {
 <li><a href="#_standard_health_checks_ausprobieren">2.1. Standard Health Checks ausprobieren</a></li>
 <li><a href="#_automatischer_health_check_für_jdbc_verbindungen">2.2. Automatischer Health-Check für JDBC-Verbindungen</a></li>
 <li><a href="#_eigene_health_checks_erstellen">2.3. Eigene Health-Checks erstellen</a></li>
+<li><a href="#_smallrye_health_für_probes_in_kubernetes_verwenden">2.4. SmallRye Health für Probes in Kubernetes verwenden.</a></li>
 </ul>
 </li>
 <li><a href="#_quellen_und_links">3. Quellen und Links</a></li>
@@ -952,6 +953,20 @@ Dabei implementiert deine Health-Check-Klasse das Interface <code>HealthCheck</c
 </div>
 </div>
 </div>
+<div class="sect2">
+<h3 id="_smallrye_health_für_probes_in_kubernetes_verwenden"><a class="anchor" href="#_smallrye_health_für_probes_in_kubernetes_verwenden"></a>2.4. SmallRye Health für Probes in Kubernetes verwenden.</h3>
+<div class="quoteblock">
+<blockquote>
+Kubernetes nutzt <strong>Probes</strong> zur Überwachung von Containern: <strong>Liveness</strong> für Neustarts, <strong>Readiness</strong> für die Traffic-Steuerung und <strong>Startup</strong> für lange Startprozesse. <strong>SmallRye Health</strong> stellt dafür die Endpunkte <code>/q/health/live</code>, <code>/q/health/ready</code> und <code>/q/health/started</code> bereit, die Kubernetes direkt nutzen kann, um den Zustand der Anwendung automatisch zu verwalten.
+</blockquote>
+</div>
+<div class="sect3">
+<h4 id="_docker_image_bauen"><a class="anchor" href="#_docker_image_bauen"></a>2.4.1. Docker Image bauen</h4>
+<div class="paragraph">
+<p>Siehe auch: <a href="build-maven-docker-image-gh-actions.html">GitHub Actions: Docker Image einer Maven Applikation bauen</a></p>
+</div>
+</div>
+</div>
 </div>
 </div>
 <div class="sect1">
@@ -975,7 +990,7 @@ Dabei implementiert deine Health-Check-Klasse das Interface <code>HealthCheck</c
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2025-02-06 13:14:26 UTC
+Last updated 2025-02-06 14:10:12 UTC
 </div>
 </div>
 </body>
