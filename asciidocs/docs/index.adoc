@@ -29,7 +29,7 @@ insbesondere in verteilten und Cloud-nativen Umgebungen.
 * konkrete Implementierung der Eclipse MicroProfile Health API
 * von Quarkus verwendet
 
-== Praxisbeispiel: SmallRye Health in Quarkus für Probes in Kubernetes
+== Praxisbeispiel: SmallRye Health in Quarkus
 
 === Standard Health Checks ausprobieren
 
@@ -150,7 +150,7 @@ Anzeige aller Checks:
 
 NOTE: Wenn wir zu unserem Projekt eine JDBC-Datasource hinzufügen, wird automatisch ein Health Check (Readiness) erstellt, der die Verbindung zur Datenbank prüft. Hier wird dies mit einer PostgreSQL-DB demonstriert.
 
-Siehe auch: link:quarkus-add-jdbc-postgres-source.adoc[Quarkus: JDBC Datasource hinzufügen - mit PostgreSQL als Beispiel]
+Siehe auch: link:quarkus-add-jdbc-postgres-source.html[Quarkus: JDBC Datasource hinzufügen - mit PostgreSQL als Beispiel]
 
 *Bei den Readiness-Checks ist nun auch sichtbar, ob die Datenbank-Verbindung aufrecht ist:*
 
