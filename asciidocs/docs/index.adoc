@@ -238,6 +238,15 @@ public class CustomReadinessCheck implements HealthCheck { //<3>
 6. Im positiven Falle wird `HealthCheckResponse.up` mit dem Namen des Health-Checks zurückgegeben.
 7. Im negativen Falle wird `HealthCheckResponse.down` mit dem Namen des Health-Checks zurückgegeben.
 
+=== SmallRye Health für Probes in Kubernetes verwenden.
+
+[quote]
+Kubernetes nutzt **Probes** zur Überwachung von Containern: **Liveness** für Neustarts, **Readiness** für die Traffic-Steuerung und **Startup** für lange Startprozesse. **SmallRye Health** stellt dafür die Endpunkte `/q/health/live`, `/q/health/ready` und `/q/health/started` bereit, die Kubernetes direkt nutzen kann, um den Zustand der Anwendung automatisch zu verwalten.
+
+==== Docker Image bauen
+
+Siehe auch: link:build-maven-docker-image-gh-actions.html[GitHub Actions: Docker Image einer Maven Applikation bauen]
+
 == Quellen und Links
 * https://quarkus.io/guides/smallrye-health[quarkus.io: SmallRye Health]
 * https://github.com/smallrye/smallrye-health[GitHub: SmallRye Health]
