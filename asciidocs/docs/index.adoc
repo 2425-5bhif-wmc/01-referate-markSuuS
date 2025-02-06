@@ -14,7 +14,7 @@ ifndef::imagesdir[:imagesdir: images]
 Unter Health Monitoring versteht man den Prozess der Überprüfung des Zustands einer Anwendung,
 um sicherzustellen, dass sie ordnungsgemäß und zuverlässig funktioniert.
 Dabei wird die Fähigkeit der Anwendung verfolgt, zu starten, auszuführen und Datenverkehr effektiv zu verarbeiten.
-Die Health Monitoring ist ein Eckpfeiler des modernen Anwendungsmanagements,
+Health Monitoring ist ein Eckpfeiler des modernen Anwendungsmanagements,
 insbesondere in verteilten und Cloud-nativen Umgebungen.
 
 === Warum ist Health Monitoring wichtig?
@@ -152,7 +152,7 @@ NOTE: Wenn wir zu unserem Projekt eine JDBC-Datasource hinzufügen, wird automat
 
 Siehe auch: link:quarkus-add-jdbc-postgres-source[Quarkus: JDBC Datasource hinzufügen - mit PostgreSQL als Beispiel]
 
-*Bei den Readiness-Checks ist nun auch sichtbar, ob die Datenbank-Verbindung aufrecht ist:*
+*Nach der Konfiguration einer JDBC-Datasource ist bei den Readiness-Checks ist nun auch sichtbar, ob die Datenbank-Verbindung aufrecht ist:*
 
 [%collapsible]
 ====
@@ -390,25 +390,30 @@ spec:
               value: app
             - name: QUARKUS_DATASOURCE_PASSWORD
               value: app
-          startupProbe: #<3>
-            httpGet:
-              path: /q/health/started
-              port: 8080
-            timeoutSeconds: 5
-            initialDelaySeconds: 15
-          livenessProbe: #<4>
+          livenessProbe: #<3>
             httpGet:
               path: /q/health/live
               port: 8080
-            initialDelaySeconds: 5
-            periodSeconds: 10
-          readinessProbe: #<5>
+            initialDelaySeconds: 5    # Warte 5 Sekunden nach dem Start, bevor die erste Prüfung erfolgt
+            periodSeconds: 10         # Alle 10 Sekunden wird die Probe wiederholt
+            timeoutSeconds: 2         # Die App hat 2 Sekunden Zeit zu antworten, bevor sie als "failed" gilt
+            failureThreshold: 3       # Nach 3 Fehlschlägen startet Kubernetes den Container neu
+          readinessProbe: #<4>
             httpGet:
               path: /q/health/ready
               port: 8080
-            initialDelaySeconds: 3
-            periodSeconds: 5
-
+            initialDelaySeconds: 3    # Bereits nach 3 Sekunden prüfen, ob die App Traffic verarbeiten kann
+            periodSeconds: 5         # Alle 5 Sekunden wird die Probe wiederholt
+            timeoutSeconds: 2        # Die App hat 2 Sekunden Zeit zu antworten
+            failureThreshold: 2      # Nach 2 Fehlschlägen wird der Container aus dem Load Balancer entfernt
+          startupProbe: #<5>
+            httpGet:
+              path: /q/health/started
+              port: 8080
+            initialDelaySeconds: 0    # Sofort nach dem Start prüfen
+            periodSeconds: 5         # Alle 5 Sekunden wird geprüft, ob die App vollständig gestartet ist
+            timeoutSeconds: 3        # Die App hat 3 Sekunden Zeit zu antworten
+            failureThreshold: 30     # Erlaubt 30 Fehlschläge = maximal 150 Sekunden (30 * 5s), bevor der Container neu gestartet wird
 ---
 apiVersion: v1
 kind: Service
@@ -425,9 +430,9 @@ spec:
 ----
 1. Dies wird bei nicht-öffentlichen Images benötigt. Hierbei greifen wir auf das vorhin angelegt Secret zu.
 2. Image-Name mit deinem ersetzen.
-3. Konfiguration der Startup-Probe. Als Endpunkt wird `/q/health/started` verwendet.
-4. Konfiguration der Liveness-Probe. Als Endpunkt wird `/q/health/live` verwendet.
-5. Konfiguration der Readiness-Probe. Als Endpunkt wird `/q/health/ready` verwendet.
+3. Konfiguration der Liveness-Probe. Als Endpunkt wird `/q/health/live` verwendet.
+4. Konfiguration der Readiness-Probe. Als Endpunkt wird `/q/health/ready` verwendet.
+5. Konfiguration der Startup-Probe. Als Endpunkt wird `/q/health/started` verwendet.
 
 NOTE: *initialDelaySeconds*: Gibt an, wie lange Kubernetes nach dem Start des Containers wartet, bevor es die erste Probe durchführt.
 
@@ -477,6 +482,21 @@ kubectl apply -f postgres.yaml
 kubectl apply -f quarkus-app.yaml
 kubectl apply -f quarkus-ingress.yaml
 ----
+
+=== *Was macht Kubernetes nun, wenn eine der Probes fehlschlägt?*
+
+[options="header"]
+|===
+| Probe         | Prüft was?                        | Verhalten bei Fehlschlag
+| Liveness      | Läuft die App noch oder ist sie abgestürzt? | *Container wird als "unhealthy" markiert.* Nach `failureThreshold` Fehlschlägen startet Kubernetes den Container neu.
+| Readiness     | Kann die App Anfragen verarbeiten? | *Container bleibt am Leben, aber erhält keinen Traffic mehr.* Sobald die Probe wieder erfolgreich ist, wird der Container wieder in den Load Balancer aufgenommen.
+| Startup       | Ist die App noch im Startprozess? | *Solange die Startup Probe fehlschlägt, ignoriert Kubernetes Liveness und Readiness.* Erst wenn die Startup Probe erfolgreich ist, starten die anderen Probes.
+|===
+
+
+== Begriffsklärung
+
+* Load Balancer: Der Load Balancer ist eine Kubernetes-Komponente, die den eingehenden Traffic auf mehrere laufende Pods verteilt. Dadurch werden die Last und Anfragen optimal verteilt, um eine hohe Verfügbarkeit und Skalierbarkeit sicherzustellen.
 
 == Quellen und Links
 * https://quarkus.io/guides/smallrye-health[quarkus.io: SmallRye Health]

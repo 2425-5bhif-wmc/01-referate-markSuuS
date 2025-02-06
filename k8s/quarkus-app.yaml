@@ -26,25 +26,30 @@ spec:
               value: app
             - name: QUARKUS_DATASOURCE_PASSWORD
               value: app
-          startupProbe:
-            httpGet:
-              path: /q/health/started
-              port: 8080
-            timeoutSeconds: 5
-            initialDelaySeconds: 15
           livenessProbe:
             httpGet:
               path: /q/health/live
               port: 8080
-            initialDelaySeconds: 5
-            periodSeconds: 10
+            initialDelaySeconds: 5    # Warte 5 Sekunden nach dem Start, bevor die erste Prüfung erfolgt
+            periodSeconds: 10         # Alle 10 Sekunden wird die Probe wiederholt
+            timeoutSeconds: 2         # Die App hat 2 Sekunden Zeit zu antworten, bevor sie als "failed" gilt
+            failureThreshold: 3       # Nach 3 Fehlschlägen startet Kubernetes den Container neu
           readinessProbe:
             httpGet:
               path: /q/health/ready
               port: 8080
-            initialDelaySeconds: 3
-            periodSeconds: 5
-
+            initialDelaySeconds: 3    # Bereits nach 3 Sekunden prüfen, ob die App Traffic verarbeiten kann
+            periodSeconds: 5         # Alle 5 Sekunden wird die Probe wiederholt
+            timeoutSeconds: 2        # Die App hat 2 Sekunden Zeit zu antworten
+            failureThreshold: 2      # Nach 2 Fehlschlägen wird der Container aus dem Load Balancer entfernt
+          startupProbe:
+            httpGet:
+              path: /q/health/started
+              port: 8080
+            initialDelaySeconds: 0    # Sofort nach dem Start prüfen
+            periodSeconds: 5         # Alle 5 Sekunden wird geprüft, ob die App vollständig gestartet ist
+            timeoutSeconds: 3        # Die App hat 3 Sekunden Zeit zu antworten
+            failureThreshold: 30     # Erlaubt 30 Fehlschläge = maximal 150 Sekunden (30 * 5s), bevor der Container neu gestartet wird
 ---
 apiVersion: v1
 kind: Service
