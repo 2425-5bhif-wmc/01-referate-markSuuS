@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 2.0.20">
 <link rel="icon" type="image/png" href="themes/favicon.png">
-<title>GitHub Actions: Docker Image einer Maven Applikation bauen</title>
+<title>GitHub Actions: Docker Image einer Quarkus Applikation bauen</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /*! Asciidoctor default stylesheet | MIT License | https://asciidoctor.org */
@@ -560,21 +560,37 @@ pre.rouge .gs {
 </head>
 <body class="article toc2 toc-left">
 <div id="header">
-<h1>GitHub Actions: Docker Image einer Maven Applikation bauen</h1>
+<h1>GitHub Actions: Docker Image einer Quarkus Applikation bauen</h1>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
-<li><a href="#_dockerfile">1. Dockerfile</a></li>
-<li><a href="#_workflow_datei">2. Workflow-Datei</a></li>
+<li><a href="#_jar_typ_anpassen">1. JAR-Typ anpassen</a></li>
+<li><a href="#_dockerfile">2. Dockerfile</a></li>
+<li><a href="#_workflow_datei">3. Workflow-Datei</a></li>
+<li><a href="#_zugriff_verwalten">4. Zugriff verwalten</a></li>
 </ul>
 </div>
 </div>
 <div id="content">
 <div class="sect1">
-<h2 id="_dockerfile"><a class="anchor" href="#_dockerfile"></a>1. Dockerfile</h2>
+<h2 id="_jar_typ_anpassen"><a class="anchor" href="#_jar_typ_anpassen"></a>1. JAR-Typ anpassen</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Wir verwenden folgendes Dockerfile für unsere Maven-Applikation und speichern es in <code>src/main/docker</code></p>
+<p>Wenn wir ein Package erstellen, wollen wir ein Uber-JAR bekommen, da es bereits alle benötigten Libraries enthält und nichts vorinstalliert sein muss.</p>
+</div>
+<div class="listingblock">
+<div class="title">&lt;maven-root&gt;/src/main/resources/application.properties</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="properties"><span class="py">quarkus.package.jar.type</span><span class="p">=</span><span class="s">uber-jar</span></code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_dockerfile"><a class="anchor" href="#_dockerfile"></a>2. Dockerfile</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Wir verwenden folgendes Dockerfile für unsere Quarkus-Applikation und speichern es in <code>src/main/docker</code></p>
 </div>
 <div class="listingblock">
 <div class="title">&lt;maven-root&gt;/src/main/docker/Dockerfile</div>
@@ -590,7 +606,7 @@ pre.rouge .gs {
 </div>
 </div>
 <div class="sect1">
-<h2 id="_workflow_datei"><a class="anchor" href="#_workflow_datei"></a>2. Workflow-Datei</h2>
+<h2 id="_workflow_datei"><a class="anchor" href="#_workflow_datei"></a>3. Workflow-Datei</h2>
 <div class="sectionbody">
 <div class="olist arabic">
 <ol class="arabic">
@@ -606,7 +622,7 @@ In diesem Ordner kommen alle Workflow-Konfigurationsdateien hinein.</p>
 <div class="listingblock">
 <div class="title">.github/workflows/build-quarkus-image.yaml</div>
 <div class="content">
-<pre class="rouge highlight"><code data-lang="yaml"><span class="na">name</span><span class="pi">:</span> <span class="s">GitHub Actions - Building Docker Images from Maven Project</span>
+<pre class="rouge highlight"><code data-lang="yaml"><span class="na">name</span><span class="pi">:</span> <span class="s">GitHub Actions - Building Docker Images from Quarkus Project</span>
 <span class="na">run-name</span><span class="pi">:</span> <span class="s">${{ github.actor }} is building Docker Images 🐋 using GitHub Actions 🚀</span>
 <span class="na">on</span><span class="pi">:</span> <span class="pi">[</span><span class="nv">push</span><span class="pi">]</span>
 <span class="na">jobs</span><span class="pi">:</span>
@@ -636,9 +652,6 @@ In diesem Ordner kommen alle Workflow-Konfigurationsdateien hinein.</p>
 
       <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">Build with Maven</span> <i class="conum" data-value="5"></i><b>(5)</b>
         <span class="na">run</span><span class="pi">:</span> <span class="s">mvn -f microprofile-health-demo/pom.xml clean package -Dmaven.test.skip=true</span>
-
-      <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">Set up docker buildx</span>
-        <span class="na">uses</span><span class="pi">:</span> <span class="s">docker/setup-buildx-action@v3</span>
 
       <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">Login to GitHub Container Registry</span> <i class="conum" data-value="6"></i><b>(6)</b>
         <span class="na">uses</span><span class="pi">:</span> <span class="s">docker/login-action@v3</span>
@@ -693,10 +706,18 @@ In diesem Ordner kommen alle Workflow-Konfigurationsdateien hinein.</p>
 </div>
 </div>
 </div>
+<div class="sect1">
+<h2 id="_zugriff_verwalten"><a class="anchor" href="#_zugriff_verwalten"></a>4. Zugriff verwalten</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Falls gewünscht kann im Repository beim Package in den Package Settings die Visibility geändert werden (private/public/internal)</p>
+</div>
+</div>
+</div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2025-02-06 14:15:04 UTC
+Last updated 2025-02-06 14:33:27 UTC
 </div>
 </div>
 </body>
