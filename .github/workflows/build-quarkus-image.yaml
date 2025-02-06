@@ -39,6 +39,9 @@ jobs:
           username: ${{ env.ACTOR_LC }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Debug output folder
+        run: ls -R microprofile-health-demo/target
+
       - name: Build and push #<7>
         uses: docker/build-push-action@v5
         with:
