@@ -578,9 +578,11 @@ pre.rouge .gs {
 <li><a href="#_automatischer_health_check_für_jdbc_verbindungen">2.2. Automatischer Health-Check für JDBC-Verbindungen</a></li>
 <li><a href="#_eigene_health_checks_erstellen">2.3. Eigene Health-Checks erstellen</a></li>
 <li><a href="#_smallrye_health_für_probes_in_kubernetes_verwenden">2.4. SmallRye Health für Probes in Kubernetes verwenden</a></li>
+<li><a href="#_was_macht_kubernetes_nun_wenn_eine_der_probes_fehlschlägt">2.5. <strong>Was macht Kubernetes nun, wenn eine der Probes fehlschlägt?</strong></a></li>
 </ul>
 </li>
-<li><a href="#_quellen_und_links">3. Quellen und Links</a></li>
+<li><a href="#_begriffsklärung">3. Begriffsklärung</a></li>
+<li><a href="#_quellen_und_links">4. Quellen und Links</a></li>
 </ul>
 </div>
 </div>
@@ -595,7 +597,7 @@ pre.rouge .gs {
 Unter Health Monitoring versteht man den Prozess der Überprüfung des Zustands einer Anwendung,
 um sicherzustellen, dass sie ordnungsgemäß und zuverlässig funktioniert.
 Dabei wird die Fähigkeit der Anwendung verfolgt, zu starten, auszuführen und Datenverkehr effektiv zu verarbeiten.
-Die Health Monitoring ist ein Eckpfeiler des modernen Anwendungsmanagements,
+Health Monitoring ist ein Eckpfeiler des modernen Anwendungsmanagements,
 insbesondere in verteilten und Cloud-nativen Umgebungen.
 </blockquote>
 </div>
@@ -841,7 +843,7 @@ Wenn wir zu unserem Projekt eine JDBC-Datasource hinzufügen, wird automatisch e
 <p>Siehe auch: <a href="quarkus-add-jdbc-postgres-source">Quarkus: JDBC Datasource hinzufügen - mit PostgreSQL als Beispiel</a></p>
 </div>
 <div class="paragraph">
-<p><strong>Bei den Readiness-Checks ist nun auch sichtbar, ob die Datenbank-Verbindung aufrecht ist:</strong></p>
+<p><strong>Nach der Konfiguration einer JDBC-Datasource ist bei den Readiness-Checks ist nun auch sichtbar, ob die Datenbank-Verbindung aufrecht ist:</strong></p>
 </div>
 <details>
 <summary class="title">Details</summary>
@@ -1123,25 +1125,30 @@ Kubernetes nutzt <strong>Probes</strong> zur Überwachung von Containern: <stron
               <span class="na">value</span><span class="pi">:</span> <span class="s">app</span>
             <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">QUARKUS_DATASOURCE_PASSWORD</span>
               <span class="na">value</span><span class="pi">:</span> <span class="s">app</span>
-          <span class="na">startupProbe</span><span class="pi">:</span> <i class="conum" data-value="3"></i><b>(3)</b>
-            <span class="na">httpGet</span><span class="pi">:</span>
-              <span class="na">path</span><span class="pi">:</span> <span class="s">/q/health/started</span>
-              <span class="na">port</span><span class="pi">:</span> <span class="m">8080</span>
-            <span class="na">timeoutSeconds</span><span class="pi">:</span> <span class="m">5</span>
-            <span class="na">initialDelaySeconds</span><span class="pi">:</span> <span class="m">15</span>
-          <span class="na">livenessProbe</span><span class="pi">:</span> <i class="conum" data-value="4"></i><b>(4)</b>
+          <span class="na">livenessProbe</span><span class="pi">:</span> <i class="conum" data-value="3"></i><b>(3)</b>
             <span class="na">httpGet</span><span class="pi">:</span>
               <span class="na">path</span><span class="pi">:</span> <span class="s">/q/health/live</span>
               <span class="na">port</span><span class="pi">:</span> <span class="m">8080</span>
-            <span class="na">initialDelaySeconds</span><span class="pi">:</span> <span class="m">5</span>
-            <span class="na">periodSeconds</span><span class="pi">:</span> <span class="m">10</span>
-          <span class="na">readinessProbe</span><span class="pi">:</span> <i class="conum" data-value="5"></i><b>(5)</b>
+            <span class="na">initialDelaySeconds</span><span class="pi">:</span> <span class="m">5</span>    <span class="c1"># Warte 5 Sekunden nach dem Start, bevor die erste Prüfung erfolgt</span>
+            <span class="na">periodSeconds</span><span class="pi">:</span> <span class="m">10</span>         <span class="c1"># Alle 10 Sekunden wird die Probe wiederholt</span>
+            <span class="na">timeoutSeconds</span><span class="pi">:</span> <span class="m">2</span>         <span class="c1"># Die App hat 2 Sekunden Zeit zu antworten, bevor sie als "failed" gilt</span>
+            <span class="na">failureThreshold</span><span class="pi">:</span> <span class="m">3</span>       <span class="c1"># Nach 3 Fehlschlägen startet Kubernetes den Container neu</span>
+          <span class="na">readinessProbe</span><span class="pi">:</span> <i class="conum" data-value="4"></i><b>(4)</b>
             <span class="na">httpGet</span><span class="pi">:</span>
               <span class="na">path</span><span class="pi">:</span> <span class="s">/q/health/ready</span>
               <span class="na">port</span><span class="pi">:</span> <span class="m">8080</span>
-            <span class="na">initialDelaySeconds</span><span class="pi">:</span> <span class="m">3</span>
-            <span class="na">periodSeconds</span><span class="pi">:</span> <span class="m">5</span>
-
+            <span class="na">initialDelaySeconds</span><span class="pi">:</span> <span class="m">3</span>    <span class="c1"># Bereits nach 3 Sekunden prüfen, ob die App Traffic verarbeiten kann</span>
+            <span class="na">periodSeconds</span><span class="pi">:</span> <span class="m">5</span>         <span class="c1"># Alle 5 Sekunden wird die Probe wiederholt</span>
+            <span class="na">timeoutSeconds</span><span class="pi">:</span> <span class="m">2</span>        <span class="c1"># Die App hat 2 Sekunden Zeit zu antworten</span>
+            <span class="na">failureThreshold</span><span class="pi">:</span> <span class="m">2</span>      <span class="c1"># Nach 2 Fehlschlägen wird der Container aus dem Load Balancer entfernt</span>
+          <span class="na">startupProbe</span><span class="pi">:</span> <i class="conum" data-value="5"></i><b>(5)</b>
+            <span class="na">httpGet</span><span class="pi">:</span>
+              <span class="na">path</span><span class="pi">:</span> <span class="s">/q/health/started</span>
+              <span class="na">port</span><span class="pi">:</span> <span class="m">8080</span>
+            <span class="na">initialDelaySeconds</span><span class="pi">:</span> <span class="m">0</span>    <span class="c1"># Sofort nach dem Start prüfen</span>
+            <span class="na">periodSeconds</span><span class="pi">:</span> <span class="m">5</span>         <span class="c1"># Alle 5 Sekunden wird geprüft, ob die App vollständig gestartet ist</span>
+            <span class="na">timeoutSeconds</span><span class="pi">:</span> <span class="m">3</span>        <span class="c1"># Die App hat 3 Sekunden Zeit zu antworten</span>
+            <span class="na">failureThreshold</span><span class="pi">:</span> <span class="m">30</span>     <span class="c1"># Erlaubt 30 Fehlschläge = maximal 150 Sekunden (30 * 5s), bevor der Container neu gestartet wird</span>
 <span class="nn">---</span>
 <span class="na">apiVersion</span><span class="pi">:</span> <span class="s">v1</span>
 <span class="na">kind</span><span class="pi">:</span> <span class="s">Service</span>
@@ -1166,13 +1173,13 @@ Kubernetes nutzt <strong>Probes</strong> zur Überwachung von Containern: <stron
 <p>Image-Name mit deinem ersetzen.</p>
 </li>
 <li>
-<p>Konfiguration der Startup-Probe. Als Endpunkt wird <code>/q/health/started</code> verwendet.</p>
-</li>
-<li>
 <p>Konfiguration der Liveness-Probe. Als Endpunkt wird <code>/q/health/live</code> verwendet.</p>
 </li>
 <li>
 <p>Konfiguration der Readiness-Probe. Als Endpunkt wird <code>/q/health/ready</code> verwendet.</p>
+</li>
+<li>
+<p>Konfiguration der Startup-Probe. Als Endpunkt wird <code>/q/health/started</code> verwendet.</p>
 </li>
 </ol>
 </div>
@@ -1268,10 +1275,56 @@ kubectl apply <span class="nt">-f</span> quarkus-ingress.yaml</code></pre>
 </div>
 </div>
 </div>
+<div class="sect2">
+<h3 id="_was_macht_kubernetes_nun_wenn_eine_der_probes_fehlschlägt"><a class="anchor" href="#_was_macht_kubernetes_nun_wenn_eine_der_probes_fehlschlägt"></a>2.5. <strong>Was macht Kubernetes nun, wenn eine der Probes fehlschlägt?</strong></h3>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Probe</th>
+<th class="tableblock halign-left valign-top">Prüft was?</th>
+<th class="tableblock halign-left valign-top">Verhalten bei Fehlschlag</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Liveness</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Läuft die App noch oder ist sie abgestürzt?</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Container wird als "unhealthy" markiert.</strong> Nach <code>failureThreshold</code> Fehlschlägen startet Kubernetes den Container neu.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Readiness</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Kann die App Anfragen verarbeiten?</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Container bleibt am Leben, aber erhält keinen Traffic mehr.</strong> Sobald die Probe wieder erfolgreich ist, wird der Container wieder in den Load Balancer aufgenommen.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Startup</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Ist die App noch im Startprozess?</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Solange die Startup Probe fehlschlägt, ignoriert Kubernetes Liveness und Readiness.</strong> Erst wenn die Startup Probe erfolgreich ist, starten die anderen Probes.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_quellen_und_links"><a class="anchor" href="#_quellen_und_links"></a>3. Quellen und Links</h2>
+<h2 id="_begriffsklärung"><a class="anchor" href="#_begriffsklärung"></a>3. Begriffsklärung</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p>Load Balancer: Der Load Balancer ist eine Kubernetes-Komponente, die den eingehenden Traffic auf mehrere laufende Pods verteilt. Dadurch werden die Last und Anfragen optimal verteilt, um eine hohe Verfügbarkeit und Skalierbarkeit sicherzustellen.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_quellen_und_links"><a class="anchor" href="#_quellen_und_links"></a>4. Quellen und Links</h2>
 <div class="sectionbody">
 <div class="ulist">
 <ul>
@@ -1291,7 +1344,7 @@ kubectl apply <span class="nt">-f</span> quarkus-ingress.yaml</code></pre>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2025-02-06 18:12:23 UTC
+Last updated 2025-02-06 18:33:29 UTC
 </div>
 </div>
 </body>
