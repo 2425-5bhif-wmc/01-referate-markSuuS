@@ -108,10 +108,6 @@ Anzeige aller Checks:
 {
     "status": "UP", <1>
     "checks": [ <2>
-        {
-            "name": "alive",
-            "status": "UP"
-        }
     ]
 }
 ----
@@ -122,10 +118,6 @@ Anzeige aller Checks:
 {
     "status": "UP", <1>
     "checks": [ <2>
-        {
-            "name": "alive",
-            "status": "UP"
-        }
     ]
 }
 ----
@@ -206,7 +198,45 @@ Siehe auch: link:quarkus-add-jdbc-postgres-source.adoc[Quarkus: JDBC Datasource 
 
 === Eigene Health-Checks erstellen
 
+Es ist auch möglich in Quarkus eigene Health-Checks zu erstellen.
+Dabei implementiert deine Health-Check-Klasse das Interface `HealthCheck` und trägt die `@Liveness`, `@Readiness` oder `@Startup` Annotation - je nach dem welche Art von Health-Check gefordert ist.
 
+==== Beispiel mit einer Readiness Health-Check Prozedur
+
+[source, java]
+----
+package at.htlleonding.healthchecks;
+
+import jakarta.enterprise.context.ApplicationScoped;
+import org.eclipse.microprofile.health.HealthCheck;
+import org.eclipse.microprofile.health.HealthCheckResponse;
+import org.eclipse.microprofile.health.Readiness;
+
+import java.util.Random;
+
+@Readiness //<1>
+@ApplicationScoped //<2>
+public class CustomReadinessCheck implements HealthCheck { //<3>
+    @Override
+    public HealthCheckResponse call() { //<4>
+        boolean b = new Random().nextBoolean(); //<5>
+
+        if(b) {
+            return HealthCheckResponse.up("custom readiness check"); //<6>
+        } else {
+            return HealthCheckResponse.down("custom readiness check"); //<7>
+        }
+    }
+}
+
+----
+1. Die Klasse soll einen Readiness-Check durchführen, daher die Annotation `@Readiness`.
+2. `@ApplicationScoped` wird empfohlen, damit nur eine Instanz für alle Requests verwendet wird.
+3. Die Klasse implementiert das Interface `HealthCheck`
+4. `call()` führt den Check durch und liefert ein `HealthCheckResponse` zurück
+5. Hier wird durch einen zufälligen Boolean das Ergebnis des Health-Checks simuliert. Dies ist dann in einem Produktivsystem durch eine sinnvolle Methode zu erstzen (z.B. _Ist die DB-Verbindung aufrecht?_)
+6. Im positiven Falle wird `HealthCheckResponse.up` mit dem Namen des Health-Checks zurückgegeben.
+7. Im negativen Falle wird `HealthCheckResponse.down` mit dem Namen des Health-Checks zurückgegeben.
 
 == Quellen und Links
 * https://quarkus.io/guides/smallrye-health[quarkus.io: SmallRye Health]
