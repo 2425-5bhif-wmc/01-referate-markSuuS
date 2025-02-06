@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health Viewer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #007bff;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            position: relative; /* Enable absolute positioning for children */
+        }
+
+
+        .reset-button {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: center;
+            display: inline-block;
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+
+
+
+        .reset-button:hover {
+            background-color: #b52b3a;
+        }
+
+        .section {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: #fafafa;
+            position: relative;
+        }
+
+        .section h2 {
+            margin: 0;
+            color: #333;
+            font-size: 20px;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .status-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status {
+            font-size: 14px;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            color: white;
+            min-width: 50px;
+            text-align: center;
+        }
+
+        .up {
+            background-color: #28a745;
+        }
+
+        .down {
+            background-color: #dc3545;
+        }
+
+        .response {
+            font-family: "Courier New", monospace;
+            background: #e8e8e8;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: left;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+
+        .trigger-button {
+            background-color: #ff9800;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 14px;
+            border-radius: 5px;
+        }
+
+        .trigger-button:hover {
+            background-color: #e68900;
+        }
+    </style>
+</head>
+<body>
+<h1>Health Viewer</h1>
+
+<div class="container">
+    <button class="reset-button" onclick="resetHealth()">Reset</button>
+    <br><br>
+    <div class="section">
+        <h2>Startup
+            <span class="status-container">
+                <span id="started-status" class="status">Checking...</span>
+            </span>
+        </h2>
+        <p id="started-content" class="response">Loading...</p>
+    </div>
+
+    <div class="section">
+        <h2>Readiness
+            <span class="status-container">
+                <span id="readiness-status" class="status">Checking...</span>
+                <button class="trigger-button" onclick="triggerFailure('readiness')">Trigger Failure</button>
+            </span>
+        </h2>
+        <p id="readiness-content" class="response">Loading...</p>
+    </div>
+
+    <div class="section">
+        <h2>Liveness
+            <span class="status-container">
+                <span id="liveness-status" class="status">Checking...</span>
+                <button class="trigger-button" onclick="triggerFailure('liveness')">Trigger Failure</button>
+            </span>
+        </h2>
+        <p id="liveness-content" class="response">Loading...</p>
+    </div>
+</div>
+
+<script>
+    var baseUrl = "http://localhost:8080";
+
+    function fetchHealth(endpoint, elementId, statusId) {
+        fetch(baseUrl + "/q/health/" + endpoint)
+            .then(response => response.json()) // Expect JSON response
+            .then(data => {
+                var isUp = data.status && data.status.toUpperCase() === "UP";
+                document.getElementById(elementId).innerText = JSON.stringify(data, null, 2);
+
+                var statusElement = document.getElementById(statusId);
+                statusElement.innerText = isUp ? "UP" : "DOWN";
+                statusElement.className = "status " + (isUp ? "up" : "down");
+            })
+            .catch(error => {
+                document.getElementById(elementId).innerText = "Error: " + error;
+                var statusElement = document.getElementById(statusId);
+                statusElement.innerText = "DOWN";
+                statusElement.className = "status down";
+            });
+    }
+
+    function triggerFailure(type) {
+        fetch(baseUrl + "/trigger-failure/" + type, {
+            method: "POST"
+        })
+            .then(response => response.text())
+            .then(data => {
+                location.reload();
+            })
+            .catch(error => alert("Error triggering failure: " + error));
+    }
+
+    function resetHealth() {
+        fetch(baseUrl + "/trigger-failure/reset", {
+            method: "POST"
+        })
+            .then(response => response.text())
+            .then(data => {
+                location.reload();
+            })
+            .catch(error => alert("Error resetting health: " + error));
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        fetchHealth("started", "started-content", "started-status");
+        fetchHealth("ready", "readiness-content", "readiness-status");
+        fetchHealth("live", "liveness-content", "liveness-status");
+    });
+</script>
+</body>
+</html>
