@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 2.0.20">
 <link rel="icon" type="image/png" href="themes/favicon.png">
-<title>SmallRye Health in Quarkus</title>
+<title>Quarkus: JDBC Datasource hinzufügen</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /*! Asciidoctor default stylesheet | MIT License | https://asciidoctor.org */
@@ -560,194 +560,57 @@ pre.rouge .gs {
 </head>
 <body class="article toc2 toc-left">
 <div id="header">
-<h1>SmallRye Health in Quarkus</h1>
+<h1>Quarkus: JDBC Datasource hinzufügen</h1>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
-<li><a href="#_einführung">1. Einführung</a>
-<ul class="sectlevel2">
-<li><a href="#_was_ist_health_monitoring">1.1. Was ist Health Monitoring?</a></li>
-<li><a href="#_warum_ist_health_monitoring_wichtig">1.2. Warum ist Health Monitoring wichtig?</a></li>
-<li><a href="#_eclipse_microprofile_health">1.3. Eclipse MicroProfile Health</a></li>
-<li><a href="#_smallrye_health">1.4. SmallRye Health</a></li>
-</ul>
-</li>
-<li><a href="#_praxisbeispiel_smallrye_health_in_quarkus_für_probes_in_kubernetes">2. Praxisbeispiel: SmallRye Health in Quarkus für Probes in Kubernetes</a>
-<ul class="sectlevel2">
-<li><a href="#_standard_health_checks_ausprobieren">2.1. Standard Health Checks ausprobieren</a></li>
-<li><a href="#_automatischer_health_check_für_jdbc_verbindungen">2.2. Automatischer Health-Check für JDBC-Verbindungen</a></li>
-<li><a href="#_eigene_health_checks_erstellen">2.3. Eigene Health-Checks erstellen</a></li>
-</ul>
-</li>
-<li><a href="#_quellen_und_links">3. Quellen und Links</a></li>
+<li><a href="#_postgresql_17_in_docker_starten">1. PostgreSQL 17 in Docker starten</a></li>
+<li><a href="#_datasource_txt_für_integrierten_datenbank_explorer">2. datasource.txt für integrierten Datenbank-Explorer</a></li>
+<li><a href="#_application_properties_um_folgende_properties_erweitern">3. application.properties um folgende Properties erweitern</a></li>
+<li><a href="#_jdbc_treiber_hinzufügen">4. JDBC-Treiber hinzufügen</a></li>
+<li><a href="#_hibernate_orm_mit_panache_hinzufügen">5. Hibernate ORM mit Panache hinzufügen</a></li>
+<li><a href="#_läuft_nun_kannst_du_jpa_entities_persistieren">6. Läuft. Nun kannst du JPA Entities persistieren :-)</a></li>
 </ul>
 </div>
 </div>
 <div id="content">
-<div class="sect1">
-<h2 id="_einführung"><a class="anchor" href="#_einführung"></a>1. Einführung</h2>
+<div id="preamble">
 <div class="sectionbody">
-<div class="sect2">
-<h3 id="_was_ist_health_monitoring"><a class="anchor" href="#_was_ist_health_monitoring"></a>1.1. Was ist Health Monitoring?</h3>
-<div class="quoteblock">
-<blockquote>
-Unter Health Monitoring versteht man den Prozess der Überprüfung des Zustands einer Anwendung,
-um sicherzustellen, dass sie ordnungsgemäß und zuverlässig funktioniert.
-Dabei wird die Fähigkeit der Anwendung verfolgt, zu starten, auszuführen und Datenverkehr effektiv zu verarbeiten.
-Die Health Monitoring ist ein Eckpfeiler des modernen Anwendungsmanagements,
-insbesondere in verteilten und Cloud-nativen Umgebungen.
-</blockquote>
+<div class="paragraph">
+<p><em>mit PostgreSQL als Beispiel</em></p>
 </div>
 </div>
-<div class="sect2">
-<h3 id="_warum_ist_health_monitoring_wichtig"><a class="anchor" href="#_warum_ist_health_monitoring_wichtig"></a>1.2. Warum ist Health Monitoring wichtig?</h3>
-<div class="ulist">
-<ul>
-<li>
-<p><strong>Reliability</strong> (Zuverlässigkeit): Erkennt Probleme frühzeitig, um Ausfallzeiten zu verhindern.</p>
-</li>
-<li>
-<p><strong>Scalability</strong> (Skalierbarkeit): Stellt sicher, dass Systeme skaliert werden können, ohne dass kritische Komponenten beschädigt werden.</p>
-</li>
-<li>
-<p><strong>Integration</strong>: Funktioniert mit Tools wie Kubernetes, um die Wiederherstellung zu automatisieren und die Ressourcennutzung zu verbessern. &#8594; <strong>Probes</strong></p>
-</li>
-</ul>
 </div>
-</div>
-<div class="sect2">
-<h3 id="_eclipse_microprofile_health"><a class="anchor" href="#_eclipse_microprofile_health"></a>1.3. Eclipse MicroProfile Health</h3>
-<div class="ulist">
-<ul>
-<li>
-<p>Spezifikation im MicroProfile-Ökosystem, bietet standardisierte Möglichkeit zur Implementierung von Health-Checks</p>
-</li>
-</ul>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_smallrye_health"><a class="anchor" href="#_smallrye_health"></a>1.4. SmallRye Health</h3>
-<div class="ulist">
-<ul>
-<li>
-<p>konkrete Implementierung der Eclipse MicroProfile Health API</p>
-</li>
-<li>
-<p>von Quarkus verwendet</p>
-</li>
-</ul>
+<div class="sect1">
+<h2 id="_postgresql_17_in_docker_starten"><a class="anchor" href="#_postgresql_17_in_docker_starten"></a>1. PostgreSQL 17 in Docker starten</h2>
+<div class="sectionbody">
+<div class="listingblock">
+<div class="title">postgres-run-in-docker.sh</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="bash">docker run <span class="nt">--rm</span> <span class="se">\</span>
+           <span class="nt">--name</span> postgres-db <span class="se">\</span>
+           <span class="nt">-e</span> <span class="nv">POSTGRES_USER</span><span class="o">=</span>app <span class="se">\</span>
+           <span class="nt">-e</span> <span class="nv">POSTGRES_PASSWORD</span><span class="o">=</span>app <span class="se">\</span>
+           <span class="nt">-e</span> <span class="nv">POSTGRES_DB</span><span class="o">=</span>db <span class="se">\</span>
+           <span class="nt">-v</span> <span class="k">${</span><span class="nv">PWD</span><span class="k">}</span>/db-postgres/db:/var/lib/postgresql/data <span class="se">\</span>
+           <span class="nt">-p</span> 5432:5432 <span class="se">\</span>
+           postgres:17-alpine</code></pre>
 </div>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_praxisbeispiel_smallrye_health_in_quarkus_für_probes_in_kubernetes"><a class="anchor" href="#_praxisbeispiel_smallrye_health_in_quarkus_für_probes_in_kubernetes"></a>2. Praxisbeispiel: SmallRye Health in Quarkus für Probes in Kubernetes</h2>
+<h2 id="_datasource_txt_für_integrierten_datenbank_explorer"><a class="anchor" href="#_datasource_txt_für_integrierten_datenbank_explorer"></a>2. datasource.txt für integrierten Datenbank-Explorer</h2>
 <div class="sectionbody">
-<div class="sect2">
-<h3 id="_standard_health_checks_ausprobieren"><a class="anchor" href="#_standard_health_checks_ausprobieren"></a>2.1. Standard Health Checks ausprobieren</h3>
-<div class="sect3">
-<h4 id="_maven_projekt_erstellen"><a class="anchor" href="#_maven_projekt_erstellen"></a>2.1.1. Maven-Projekt erstellen</h4>
-<details>
-<summary class="title">Details</summary>
-<div class="content">
 <div class="listingblock">
+<div class="title">datasource.txt</div>
 <div class="content">
-<pre class="rouge highlight"><code data-lang="bash">mvn io.quarkus.platform:quarkus-maven-plugin:3.18.1:create <span class="se">\</span>
-    <span class="nt">-DprojectGroupId</span><span class="o">==</span>at.htlleonding <span class="se">\</span>
-    <span class="nt">-DprojectArtifactId</span><span class="o">==</span>microprofile-health-demo <span class="se">\</span>
-    <span class="nt">-Dextensions</span><span class="o">==</span><span class="s1">'smallrye-health'</span> <span class="se">\</span>
-    <span class="nt">-DnoCode</span>
-<span class="nb">cd </span>microprofile-health-demo</code></pre>
+<pre class="rouge highlight"><code data-lang="text">#DataSourceSettings#
+#LocalDataSource: db@localhost
+#BEGIN#
+&lt;data-source source="LOCAL" name="db@localhost" uuid="6e303d8d-ca35-4f08-a10b-ea9a45ee2aa2"&gt;&lt;database-info product="PostgreSQL" version="15.2" jdbc-version="4.2" driver-name="PostgreSQL JDBC Driver" driver-version="42.5.0" dbms="POSTGRES" exact-version="15.2" exact-driver-version="42.5"&gt;&lt;identifier-quote-string&gt;&amp;quot;&lt;/identifier-quote-string&gt;&lt;/database-info&gt;&lt;case-sensitivity plain-identifiers="lower" quoted-identifiers="exact"/&gt;&lt;driver-ref&gt;postgresql&lt;/driver-ref&gt;&lt;synchronize&gt;true&lt;/synchronize&gt;&lt;jdbc-driver&gt;org.postgresql.Driver&lt;/jdbc-driver&gt;&lt;jdbc-url&gt;jdbc:postgresql://localhost:5432/db&lt;/jdbc-url&gt;&lt;secret-storage&gt;master_key&lt;/secret-storage&gt;&lt;user-name&gt;app&lt;/user-name&gt;&lt;schema-mapping&gt;&lt;introspection-scope&gt;&lt;node kind="database" qname="@"&gt;&lt;node kind="schema" qname="@"/&gt;&lt;/node&gt;&lt;/introspection-scope&gt;&lt;/schema-mapping&gt;&lt;working-dir&gt;$ProjectFileDir$&lt;/working-dir&gt;&lt;/data-source&gt;
+#END#</code></pre>
 </div>
-</div>
-</div>
-</details>
-</div>
-<div class="sect3">
-<h4 id="_oder_extension_zu_bestehendem_projekt_hinzufügen"><a class="anchor" href="#_oder_extension_zu_bestehendem_projekt_hinzufügen"></a>2.1.2. Oder Extension zu bestehendem Projekt hinzufügen</h4>
-<details>
-<summary class="title">Details</summary>
-<div class="content">
-<div class="listingblock">
-<div class="title">Maven-Wrapper</div>
-<div class="content">
-<pre class="rouge highlight"><code data-lang="bash">./mvnw quarkus:add-extension <span class="nt">-Dextensions</span><span class="o">==</span><span class="s1">'smallrye-health'</span></code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>oder</p>
-</div>
-<div class="listingblock">
-<div class="title">pom.xml</div>
-<div class="content">
-<pre class="rouge highlight"><code data-lang="xml"><span class="nt">&lt;dependency&gt;</span>
-    <span class="nt">&lt;groupId&gt;</span>io.quarkus<span class="nt">&lt;/groupId&gt;</span>
-    <span class="nt">&lt;artifactId&gt;</span>quarkus-smallrye-health<span class="nt">&lt;/artifactId&gt;</span>
-<span class="nt">&lt;/dependency&gt;</span></code></pre>
-</div>
-</div>
-</div>
-</details>
-</div>
-<div class="sect3">
-<h4 id="_maven_projekt_starten"><a class="anchor" href="#_maven_projekt_starten"></a>2.1.3. Maven-Projekt starten</h4>
-<div class="listingblock">
-<div class="content">
-<pre class="rouge highlight"><code data-lang="bash">./mvnw clean quarkus:dev</code></pre>
-</div>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_standard_endpoints"><a class="anchor" href="#_standard_endpoints"></a>2.1.4. Standard-Endpoints</h4>
-<div class="paragraph">
-<p>Der Import der <code>smallrye-health</code> Extension stellt direkt 3 REST-Endpunkte bereit:</p>
-</div>
-<div class="sect4">
-<h5 id="_liveness_live"><a class="anchor" href="#_liveness_live"></a>Liveness (Live)</h5>
-<div class="ulist">
-<ul>
-<li>
-<p><code>GET /q/health/live</code></p>
-</li>
-<li>
-<p>Zeigt an, dass die Anwendung ausgeführt wird und kein kritischer Fehler aufgetreten ist, der einen Neustart erforderlich macht.</p>
-</li>
-<li>
-<p>Falls die JVM oder der Container abstürzt oder sich in einem fehlerhaften Zustand befindet, schlägt der Liveness-Check fehl.</p>
-</li>
-</ul>
-</div>
-</div>
-<div class="sect4">
-<h5 id="_readiness_ready"><a class="anchor" href="#_readiness_ready"></a>Readiness (Ready)</h5>
-<div class="ulist">
-<ul>
-<li>
-<p><code>GET /q/health/ready</code></p>
-</li>
-<li>
-<p>Zeigt an, dass die Anwendung zur Bearbeitung von Anfragen bereit und voll funktionsfähig ist.</p>
-</li>
-<li>
-<p>Falls Quarkus eine Abhängigkeit erkennt (z. B. Datenbank oder externe API), kann es automatisch bestimmen, dass die Anwendung nicht bereit ist, falls diese Abhängigkeit nicht verfügbar ist.</p>
-</li>
-</ul>
-</div>
-</div>
-<div class="sect4">
-<h5 id="_started"><a class="anchor" href="#_started"></a>Started</h5>
-<div class="ulist">
-<ul>
-<li>
-<p><code>GET /q/health/started</code></p>
-</li>
-<li>
-<p>Zeigt an, ob der vollständige Startprozess abgeschlossen ist.</p>
-</li>
-<li>
-<p>Dies geschieht, nachdem alle Startup-Beans und StartupEvent-Listener vollständig ausgeführt wurden.</p>
-</li>
-</ul>
 </div>
 <div class="admonitionblock tip">
 <table>
@@ -756,220 +619,79 @@ insbesondere in verteilten und Cloud-nativen Umgebungen.
 <i class="fa icon-tip" title="Tip"></i>
 </td>
 <td class="content">
-Mit <code>GET /q/health</code> werden alle Health-Checks angezeigt. Du kannst diese Endpoints nun ausprobieren.
+Aus Sicherheitsgründen muss im Popup das Passwort erneut eingegeben werden.
 </td>
 </tr>
 </table>
 </div>
-<div class="paragraph">
-<p>Anzeige aller Checks:</p>
 </div>
-<details>
-<summary class="title">Details</summary>
-<div class="content">
+</div>
+<div class="sect1">
+<h2 id="_application_properties_um_folgende_properties_erweitern"><a class="anchor" href="#_application_properties_um_folgende_properties_erweitern"></a>3. application.properties um folgende Properties erweitern</h2>
+<div class="sectionbody">
 <div class="listingblock">
-<div class="title"><code>/q/health</code></div>
+<div class="title">application.properties</div>
 <div class="content">
-<pre class="rouge highlight"><code data-lang="json"><span class="p">{</span><span class="w">
-    </span><span class="nl">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"UP"</span><span class="p">,</span><span class="w"> <i class="conum" data-value="1"></i><b>(1)</b>
-    </span><span class="nl">"checks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> <i class="conum" data-value="2"></i><b>(2)</b>
-    </span><span class="p">]</span><span class="w">
-</span><span class="p">}</span></code></pre>
-</div>
-</div>
-<div class="listingblock">
-<div class="title"><code>/q/health/live</code></div>
-<div class="content">
-<pre class="rouge highlight"><code data-lang="json"><span class="p">{</span><span class="w">
-    </span><span class="nl">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"UP"</span><span class="p">,</span><span class="w"> <i class="conum" data-value="1"></i><b>(1)</b>
-    </span><span class="nl">"checks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> <i class="conum" data-value="2"></i><b>(2)</b>
-    </span><span class="p">]</span><span class="w">
-</span><span class="p">}</span></code></pre>
-</div>
-</div>
-<div class="listingblock">
-<div class="title"><code>/q/health/ready</code></div>
-<div class="content">
-<pre class="rouge highlight"><code data-lang="json"><span class="p">{</span><span class="w">
-    </span><span class="nl">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"UP"</span><span class="p">,</span><span class="w"> <i class="conum" data-value="1"></i><b>(1)</b>
-    </span><span class="nl">"checks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> <i class="conum" data-value="2"></i><b>(2)</b>
-    </span><span class="p">]</span><span class="w">
-</span><span class="p">}</span></code></pre>
-</div>
-</div>
-<div class="listingblock">
-<div class="title"><code>/q/health/started</code></div>
-<div class="content">
-<pre class="rouge highlight"><code data-lang="json"><span class="p">{</span><span class="w">
-    </span><span class="nl">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"UP"</span><span class="p">,</span><span class="w"> <i class="conum" data-value="1"></i><b>(1)</b>
-    </span><span class="nl">"checks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> <i class="conum" data-value="2"></i><b>(2)</b>
-    </span><span class="p">]</span><span class="w">
-</span><span class="p">}</span></code></pre>
-</div>
-</div>
-<div class="olist arabic">
-<ol class="arabic">
-<li>
-<p><code>status</code> gibt an, ob alle Health-Checks erfolgreich waren.</p>
-</li>
-<li>
-<p><code>checks</code> ist ein Array von individuellen Health-Checks (dazu später mehr).</p>
-</li>
-</ol>
-</div>
-</div>
-</details>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_automatischer_health_check_für_jdbc_verbindungen"><a class="anchor" href="#_automatischer_health_check_für_jdbc_verbindungen"></a>2.2. Automatischer Health-Check für JDBC-Verbindungen</h3>
-<div class="admonitionblock note">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-note" title="Note"></i>
-</td>
-<td class="content">
-Wenn wir zu unserem Projekt eine JDBC-Datasource hinzufügen, wird automatisch ein Health Check (Readiness) erstellt, der die Verbindung zur Datenbank prüft. Hier wird dies mit einer PostgreSQL-DB demonstriert.
-</td>
-</tr>
-</table>
-</div>
-<div class="paragraph">
-<p>Siehe auch: <a href="quarkus-add-jdbc-postgres-source.adoc">Quarkus: JDBC Datasource hinzufügen - mit PostgreSQL als Beispiel</a></p>
-</div>
-<div class="paragraph">
-<p><strong>Bei den Readiness-Checks ist nun auch sichtbar, ob die Datenbank-Verbindung aufrecht ist:</strong></p>
-</div>
-<details>
-<summary class="title">Details</summary>
-<div class="content">
-<div class="listingblock">
-<div class="title"><code>/q/health/ready</code></div>
-<div class="content">
-<pre class="rouge highlight"><code data-lang="json"><span class="p">{</span><span class="w">
-    </span><span class="nl">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"UP"</span><span class="p">,</span><span class="w">
-    </span><span class="nl">"checks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
-        </span><span class="p">{</span><span class="w">
-            </span><span class="nl">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Database connections health check"</span><span class="p">,</span><span class="w">
-            </span><span class="nl">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"UP"</span><span class="p">,</span><span class="w">
-            </span><span class="nl">"data"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
-                </span><span class="nl">"&lt;default&gt;"</span><span class="p">:</span><span class="w"> </span><span class="s2">"UP"</span><span class="w">
-            </span><span class="p">}</span><span class="w">
-        </span><span class="p">}</span><span class="w">
-    </span><span class="p">]</span><span class="w">
-</span><span class="p">}</span></code></pre>
-</div>
-</div>
-</div>
-</details>
-<div class="paragraph">
-<p><strong>Stoppe nun die Datenbank und sieh dir die Readiness-Checks erneut an:</strong></p>
-</div>
-<details>
-<summary class="title">Details</summary>
-<div class="content">
-<div class="listingblock">
-<div class="title"><code>/q/health/ready</code></div>
-<div class="content">
-<pre class="rouge highlight"><code data-lang="json"><span class="p">{</span><span class="w">
-    </span><span class="nl">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"DOWN"</span><span class="p">,</span><span class="w">
-    </span><span class="nl">"checks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
-        </span><span class="p">{</span><span class="w">
-            </span><span class="nl">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Database connections health check"</span><span class="p">,</span><span class="w">
-            </span><span class="nl">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"DOWN"</span><span class="p">,</span><span class="w">
-            </span><span class="nl">"data"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
-                </span><span class="nl">"&lt;default&gt;"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Unable to execute the validation check for the default DataSource: Connection to localhost:5432 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections."</span><span class="w">
-            </span><span class="p">}</span><span class="w">
-        </span><span class="p">}</span><span class="w">
-    </span><span class="p">]</span><span class="w">
-</span><span class="p">}</span></code></pre>
-</div>
-</div>
-</div>
-</details>
-</div>
-<div class="sect2">
-<h3 id="_eigene_health_checks_erstellen"><a class="anchor" href="#_eigene_health_checks_erstellen"></a>2.3. Eigene Health-Checks erstellen</h3>
-<div class="paragraph">
-<p>Es ist auch möglich in Quarkus eigene Health-Checks zu erstellen.
-Dabei implementiert deine Health-Check-Klasse das Interface <code>HealthCheck</code> und trägt die <code>@Liveness</code>, <code>@Readiness</code> oder <code>@Startup</code> Annotation - je nach dem welche Art von Health-Check gefordert ist.</p>
-</div>
-<div class="sect3">
-<h4 id="_beispiel_mit_einer_readiness_health_check_prozedur"><a class="anchor" href="#_beispiel_mit_einer_readiness_health_check_prozedur"></a>2.3.1. Beispiel mit einer Readiness Health-Check Prozedur</h4>
-<div class="listingblock">
-<div class="content">
-<pre class="rouge highlight"><code data-lang="java"><span class="kn">package</span> <span class="nn">at.htlleonding.healthchecks</span><span class="o">;</span>
+<pre class="rouge highlight"><code data-lang="properties"><span class="c"># datasource configuration
+</span><span class="py">quarkus.datasource.db-kind</span> <span class="p">=</span> <span class="s">postgresql</span>
+<span class="py">quarkus.datasource.username</span> <span class="p">=</span> <span class="s">app</span>
+<span class="py">quarkus.datasource.password</span> <span class="p">=</span> <span class="s">app</span>
+<span class="py">quarkus.datasource.jdbc.url</span> <span class="p">=</span> <span class="s">jdbc:postgresql://localhost:5432/db</span>
 
-<span class="kn">import</span> <span class="nn">jakarta.enterprise.context.ApplicationScoped</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">org.eclipse.microprofile.health.HealthCheck</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">org.eclipse.microprofile.health.HealthCheckResponse</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">org.eclipse.microprofile.health.Readiness</span><span class="o">;</span>
-
-<span class="kn">import</span> <span class="nn">java.util.Random</span><span class="o">;</span>
-
-<span class="nd">@Readiness</span> <i class="conum" data-value="1"></i><b>(1)</b>
-<span class="nd">@ApplicationScoped</span> <i class="conum" data-value="2"></i><b>(2)</b>
-<span class="kd">public</span> <span class="kd">class</span> <span class="nc">CustomReadinessCheck</span> <span class="kd">implements</span> <span class="nc">HealthCheck</span> <span class="o">{</span> <i class="conum" data-value="3"></i><b>(3)</b>
-    <span class="nd">@Override</span>
-    <span class="kd">public</span> <span class="nc">HealthCheckResponse</span> <span class="nf">call</span><span class="o">()</span> <span class="o">{</span> <i class="conum" data-value="4"></i><b>(4)</b>
-        <span class="kt">boolean</span> <span class="n">b</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Random</span><span class="o">().</span><span class="na">nextBoolean</span><span class="o">();</span> <i class="conum" data-value="5"></i><b>(5)</b>
-
-        <span class="k">if</span><span class="o">(</span><span class="n">b</span><span class="o">)</span> <span class="o">{</span>
-            <span class="k">return</span> <span class="nc">HealthCheckResponse</span><span class="o">.</span><span class="na">up</span><span class="o">(</span><span class="s">"custom readiness check"</span><span class="o">);</span> <i class="conum" data-value="6"></i><b>(6)</b>
-        <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
-            <span class="k">return</span> <span class="nc">HealthCheckResponse</span><span class="o">.</span><span class="na">down</span><span class="o">(</span><span class="s">"custom readiness check"</span><span class="o">);</span> <i class="conum" data-value="7"></i><b>(7)</b>
-        <span class="o">}</span>
-    <span class="o">}</span>
-<span class="o">}</span></code></pre>
-</div>
-</div>
-<div class="olist arabic">
-<ol class="arabic">
-<li>
-<p>Die Klasse soll einen Readiness-Check durchführen, daher die Annotation <code>@Readiness</code>.</p>
-</li>
-<li>
-<p><code>@ApplicationScoped</code> wird empfohlen, damit nur eine Instanz für alle Requests verwendet wird.</p>
-</li>
-<li>
-<p>Die Klasse implementiert das Interface <code>HealthCheck</code></p>
-</li>
-<li>
-<p><code>call()</code> führt den Check durch und liefert ein <code>HealthCheckResponse</code> zurück</p>
-</li>
-<li>
-<p>Hier wird durch einen zufälligen Boolean das Ergebnis des Health-Checks simuliert. Dies ist dann in einem Produktivsystem durch eine sinnvolle Methode zu erstzen (z.B. <em>Ist die DB-Verbindung aufrecht?</em>)</p>
-</li>
-<li>
-<p>Im positiven Falle wird <code>HealthCheckResponse.up</code> mit dem Namen des Health-Checks zurückgegeben.</p>
-</li>
-<li>
-<p>Im negativen Falle wird <code>HealthCheckResponse.down</code> mit dem Namen des Health-Checks zurückgegeben.</p>
-</li>
-</ol>
-</div>
+<span class="c"># drop and create the database at startup (use `update` to only update the schema)
+</span><span class="py">quarkus.hibernate-orm.database.generation</span><span class="p">=</span><span class="s">drop-and-create</span></code></pre>
 </div>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_quellen_und_links"><a class="anchor" href="#_quellen_und_links"></a>3. Quellen und Links</h2>
+<h2 id="_jdbc_treiber_hinzufügen"><a class="anchor" href="#_jdbc_treiber_hinzufügen"></a>4. JDBC-Treiber hinzufügen</h2>
 <div class="sectionbody">
-<div class="ulist">
-<ul>
-<li>
-<p><a href="https://quarkus.io/guides/smallrye-health">quarkus.io: SmallRye Health</a></p>
-</li>
-<li>
-<p><a href="https://github.com/smallrye/smallrye-health">GitHub: SmallRye Health</a></p>
-</li>
-<li>
-<p><a href="https://github.com/eclipse/microprofile-health/">GitHub: Eclipse MicroProfile Health</a></p>
-</li>
-</ul>
+<div class="listingblock">
+<div class="title">pom.xml</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="xml"><span class="nt">&lt;dependency&gt;</span>
+    <span class="nt">&lt;groupId&gt;</span>io.quarkus<span class="nt">&lt;/groupId&gt;</span>
+    <span class="nt">&lt;artifactId&gt;</span>quarkus-jdbc-postgresql<span class="nt">&lt;/artifactId&gt;</span>
+<span class="nt">&lt;/dependency&gt;</span></code></pre>
 </div>
+</div>
+<div class="paragraph">
+<p>oder</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="bash">./mvnw quarkus:add-extension <span class="nt">-Dextensions</span><span class="o">=</span><span class="s2">"io.quarkus:quarkus-jdbc-postgresql"</span></code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_hibernate_orm_mit_panache_hinzufügen"><a class="anchor" href="#_hibernate_orm_mit_panache_hinzufügen"></a>5. Hibernate ORM mit Panache hinzufügen</h2>
+<div class="sectionbody">
+<div class="listingblock">
+<div class="title">pom.xml</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="xml"><span class="nt">&lt;dependency&gt;</span>
+    <span class="nt">&lt;groupId&gt;</span>io.quarkus<span class="nt">&lt;/groupId&gt;</span>
+    <span class="nt">&lt;artifactId&gt;</span>quarkus-hibernate-orm-panache<span class="nt">&lt;/artifactId&gt;</span>
+<span class="nt">&lt;/dependency&gt;</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>oder</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="bash">./mvnw quarkus:add-extension <span class="nt">-Dextensions</span><span class="o">=</span><span class="s2">"io.quarkus:quarkus-hibernate-orm-panache"</span></code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_läuft_nun_kannst_du_jpa_entities_persistieren"><a class="anchor" href="#_läuft_nun_kannst_du_jpa_entities_persistieren"></a>6. Läuft. Nun kannst du JPA Entities persistieren :-)</h2>
+<div class="sectionbody">
+
 </div>
 </div>
 </div>
