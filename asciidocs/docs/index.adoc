@@ -238,7 +238,7 @@ public class CustomReadinessCheck implements HealthCheck { //<3>
 6. Im positiven Falle wird `HealthCheckResponse.up` mit dem Namen des Health-Checks zurückgegeben.
 7. Im negativen Falle wird `HealthCheckResponse.down` mit dem Namen des Health-Checks zurückgegeben.
 
-=== SmallRye Health für Probes in Kubernetes verwenden.
+=== SmallRye Health für Probes in Kubernetes verwenden
 
 [quote]
 Kubernetes nutzt **Probes** zur Überwachung von Containern: **Liveness** für Neustarts, **Readiness** für die Traffic-Steuerung und **Startup** für lange Startprozesse. **SmallRye Health** stellt dafür die Endpunkte `/q/health/live`, `/q/health/ready` und `/q/health/started` bereit, die Kubernetes direkt nutzen kann, um den Zustand der Anwendung automatisch zu verwalten.
@@ -246,6 +246,237 @@ Kubernetes nutzt **Probes** zur Überwachung von Containern: **Liveness** für N
 ==== Docker Image bauen
 
 Siehe auch: link:quarkus-build-docker-image[GitHub Actions: Docker Image einer Quarkus Applikation bauen]
+
+==== LeoCloud CLI & kubectl installieren
+
+Siehe auch: link:https://cloud.htl-leonding.ac.at/html/user-manual.html[LeoCloud User Manual]
+
+==== LeoCloud Dashboard starten
+
+Siehe auch: link:https://cloud.htl-leonding.ac.at/html/user-manual.html#_dashboard[LeoCloud User Manual > Dashboard]
+
+==== Credentials für GitHub Container Registry einpflegen (falls Image privat)
+
+[source, bash]
+----
+kubectl create secret docker-registry regcred \
+  --docker-server=ghcr.io \
+  --docker-username=YOUR_GITHUB_USERNAME \
+  --docker-password=YOUR_GITHUB_PAT \ #<1>
+  --docker-email=YOUR_EMAIL
+
+----
+1. Hier ist ein Token erforderlich, die einfache Eingabe des Passwortes funktioniert nicht
+
+==== Konfigurationsdateien erstellen
+
+*1.* PVC, Service & Deployment für die *PostgreSQL-Datenbank*
+
+[%collapsible]
+====
+.k8s/postgres.yaml
+[source, yaml]
+----
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+spec:
+  selector:
+    app: postgres
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:17-alpine
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              value: app
+            - name: POSTGRES_PASSWORD
+              value: app
+            - name: POSTGRES_DB
+              value: db
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: postgres-storage
+          livenessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - app
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          readinessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - app
+            initialDelaySeconds: 3
+            periodSeconds: 5
+      volumes:
+        - name: postgres-storage
+          persistentVolumeClaim:
+            claimName: postgres-pvc
+
+----
+====
+
+*2.* Deployment & Service für die *Quarkus-Applikation*
+
+[%collapsible]
+====
+.k8s/quarkus-app.yaml
+[source, yaml]
+----
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: quarkus-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: quarkus
+  template:
+    metadata:
+      labels:
+        app: quarkus
+    spec:
+      imagePullSecrets:
+        - name: regcred  #<1>
+      containers:
+        - name: quarkus-app
+          image: ghcr.io/2425-5bhif-wmc/01-referate-marksuus/mp-health-demo:latest #<2>
+          ports:
+            - containerPort: 8080
+          env:
+            - name: QUARKUS_DATASOURCE_JDBC_URL
+              value: jdbc:postgresql://postgres:5432/db
+            - name: QUARKUS_DATASOURCE_USERNAME
+              value: app
+            - name: QUARKUS_DATASOURCE_PASSWORD
+              value: app
+          startupProbe: #<3>
+            httpGet:
+              path: /q/health/started
+              port: 8080
+            timeoutSeconds: 5
+            initialDelaySeconds: 15
+          livenessProbe: #<4>
+            httpGet:
+              path: /q/health/live
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          readinessProbe: #<5>
+            httpGet:
+              path: /q/health/ready
+              port: 8080
+            initialDelaySeconds: 3
+            periodSeconds: 5
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: quarkus-service
+spec:
+  selector:
+    app: quarkus
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+  type: NodePort
+----
+1. Dies wird bei nicht-öffentlichen Images benötigt. Hierbei greifen wir auf das vorhin angelegt Secret zu.
+2. Image-Name mit deinem ersetzen.
+3. Konfiguration der Startup-Probe. Als Endpunkt wird `/q/health/started` verwendet.
+4. Konfiguration der Liveness-Probe. Als Endpunkt wird `/q/health/live` verwendet.
+5. Konfiguration der Readiness-Probe. Als Endpunkt wird `/q/health/ready` verwendet.
+
+NOTE: *initialDelaySeconds*: Gibt an, wie lange Kubernetes nach dem Start des Containers wartet, bevor es die erste Probe durchführt.
+
+NOTE: *periodSeconds*: Gibt an, wie oft (in Sekunden) Kubernetes die Probe wiederholt.
+
+NOTE: *timeoutSeconds*: Gibt an, wie lange Kubernetes auf eine Antwort wartet, bevor die Probe als fehlgeschlagen gilt.
+====
+
+*3.* *Ingress* für die Quarkus-Applikation
+
+[%collapsible]
+====
+.k8s/quarkus-ingress.yaml
+[source, yaml]
+----
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: quarkus-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "PUT, GET, POST, OPTIONS, DELETE"
+    #nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: if200156.cloud.htl-leonding.ac.at #<1>
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: quarkus-service
+                port:
+                  number: 8080
+----
+1. Mit deinem Namespace ersetzen
+====
+
+==== Resourcen erstellen
+
+.im Verzeichnis der Konfigurationsdateien (k8s)
+[source, bash]
+----
+kubectl apply -f postgres.yaml
+kubectl apply -f quarkus-app.yaml
+kubectl apply -f quarkus-ingress.yaml
+----
 
 == Quellen und Links
 * https://quarkus.io/guides/smallrye-health[quarkus.io: SmallRye Health]
