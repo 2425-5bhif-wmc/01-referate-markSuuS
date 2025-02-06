@@ -55,6 +55,9 @@ jobs:
       - name: Build with Maven #<5>
         run: mvn -f microprofile-health-demo/pom.xml clean package -Dmaven.test.skip=true
 
+      - name: Set up docker buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Login to GitHub Container Registry #<6>
         uses: docker/login-action@v3
         with:
@@ -70,14 +73,15 @@ jobs:
           platforms: linux/amd64
           push: true
           tags: ghcr.io/${{ env.REPO_LC }}/mp-health-demo:latest #<10>
+
 ----
 1. Um Probleme mit Groß-/Kleinschreibung entgegenzuwirken, benutzen wir für den Actor und den Repository-Namen ausschließlich Kleibuchstaben. Diese werden als Umgebungsvariablen gespeichert.
 2. Test-Ausgabe des Actors und des Repositories.
 3. Das Repository wird hier auf den Runner ausgecheckt.
-4. Am Runner wird Temurin 21 LTS installiert
+4. Am Runner wird Temurin 21 LTS installiert.
 5. Hier wird ein Package aus dem Maven-Projekt erstellt. Hierbei ist aufzupassen, den Pfad zur `pom.xml` richtig zu setzen.
 6. Anmeldung in der GitHub Container Registry mit unseren GitHub-Credentials.
 7. Hier wird das Docker Image gebaut und in die Registry gepusht. Dabei gibt es einiges zu beachten:
 8. Als `context` muss das Root-Verzeichnis des Maven-Projektes angegeben werden.
 9. Als `file` wird das Dockerfile des Maven-Projektes angegeben (normalerweise in `src/main/docker`)
-10. Hier wird festgelegt, wohin genau das Image gepusht werden soll (normalerweise im Repository des Projektes).
+10. Hier wird festgelegt, wohin genau das Image gepusht werden soll (normalerweise ins Repository des Projektes).
