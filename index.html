@@ -577,7 +577,7 @@ pre.rouge .gs {
 <li><a href="#_standard_health_checks_ausprobieren">2.1. Standard Health Checks ausprobieren</a></li>
 <li><a href="#_automatischer_health_check_für_jdbc_verbindungen">2.2. Automatischer Health-Check für JDBC-Verbindungen</a></li>
 <li><a href="#_eigene_health_checks_erstellen">2.3. Eigene Health-Checks erstellen</a></li>
-<li><a href="#_smallrye_health_für_probes_in_kubernetes_verwenden">2.4. SmallRye Health für Probes in Kubernetes verwenden.</a></li>
+<li><a href="#_smallrye_health_für_probes_in_kubernetes_verwenden">2.4. SmallRye Health für Probes in Kubernetes verwenden</a></li>
 </ul>
 </li>
 <li><a href="#_quellen_und_links">3. Quellen und Links</a></li>
@@ -954,7 +954,7 @@ Dabei implementiert deine Health-Check-Klasse das Interface <code>HealthCheck</c
 </div>
 </div>
 <div class="sect2">
-<h3 id="_smallrye_health_für_probes_in_kubernetes_verwenden"><a class="anchor" href="#_smallrye_health_für_probes_in_kubernetes_verwenden"></a>2.4. SmallRye Health für Probes in Kubernetes verwenden.</h3>
+<h3 id="_smallrye_health_für_probes_in_kubernetes_verwenden"><a class="anchor" href="#_smallrye_health_für_probes_in_kubernetes_verwenden"></a>2.4. SmallRye Health für Probes in Kubernetes verwenden</h3>
 <div class="quoteblock">
 <blockquote>
 Kubernetes nutzt <strong>Probes</strong> zur Überwachung von Containern: <strong>Liveness</strong> für Neustarts, <strong>Readiness</strong> für die Traffic-Steuerung und <strong>Startup</strong> für lange Startprozesse. <strong>SmallRye Health</strong> stellt dafür die Endpunkte <code>/q/health/live</code>, <code>/q/health/ready</code> und <code>/q/health/started</code> bereit, die Kubernetes direkt nutzen kann, um den Zustand der Anwendung automatisch zu verwalten.
@@ -964,6 +964,307 @@ Kubernetes nutzt <strong>Probes</strong> zur Überwachung von Containern: <stron
 <h4 id="_docker_image_bauen"><a class="anchor" href="#_docker_image_bauen"></a>2.4.1. Docker Image bauen</h4>
 <div class="paragraph">
 <p>Siehe auch: <a href="quarkus-build-docker-image">GitHub Actions: Docker Image einer Quarkus Applikation bauen</a></p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_leocloud_cli_kubectl_installieren"><a class="anchor" href="#_leocloud_cli_kubectl_installieren"></a>2.4.2. LeoCloud CLI &amp; kubectl installieren</h4>
+<div class="paragraph">
+<p>Siehe auch: <a href="https://cloud.htl-leonding.ac.at/html/user-manual.html">LeoCloud User Manual</a></p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_leocloud_dashboard_starten"><a class="anchor" href="#_leocloud_dashboard_starten"></a>2.4.3. LeoCloud Dashboard starten</h4>
+<div class="paragraph">
+<p>Siehe auch: <a href="https://cloud.htl-leonding.ac.at/html/user-manual.html#_dashboard">LeoCloud User Manual &gt; Dashboard</a></p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_credentials_für_github_container_registry_einpflegen_falls_image_privat"><a class="anchor" href="#_credentials_für_github_container_registry_einpflegen_falls_image_privat"></a>2.4.4. Credentials für GitHub Container Registry einpflegen (falls Image privat)</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="bash">kubectl create secret docker-registry regcred <span class="se">\</span>
+  <span class="nt">--docker-server</span><span class="o">=</span>ghcr.io <span class="se">\</span>
+  <span class="nt">--docker-username</span><span class="o">=</span>YOUR_GITHUB_USERNAME <span class="se">\</span>
+  <span class="nt">--docker-password</span><span class="o">=</span>YOUR_GITHUB_PAT <span class="se">\ </span><i class="conum" data-value="1"></i><b>(1)</b>
+  <span class="nt">--docker-email</span><span class="o">=</span>YOUR_EMAIL</code></pre>
+</div>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Hier ist ein Token erforderlich, die einfache Eingabe des Passwortes funktioniert nicht</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_konfigurationsdateien_erstellen"><a class="anchor" href="#_konfigurationsdateien_erstellen"></a>2.4.5. Konfigurationsdateien erstellen</h4>
+<div class="paragraph">
+<p><strong>1.</strong> PVC, Service &amp; Deployment für die <strong>PostgreSQL-Datenbank</strong></p>
+</div>
+<details>
+<summary class="title">Details</summary>
+<div class="content">
+<div class="listingblock">
+<div class="title">k8s/postgres.yaml</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="yaml"><span class="na">apiVersion</span><span class="pi">:</span> <span class="s">v1</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">PersistentVolumeClaim</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">postgres-pvc</span>
+<span class="na">spec</span><span class="pi">:</span>
+  <span class="na">accessModes</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="s">ReadWriteOnce</span>
+  <span class="na">resources</span><span class="pi">:</span>
+    <span class="na">requests</span><span class="pi">:</span>
+      <span class="na">storage</span><span class="pi">:</span> <span class="s">1Gi</span>
+
+<span class="nn">---</span>
+<span class="na">apiVersion</span><span class="pi">:</span> <span class="s">v1</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">Service</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">postgres</span>
+<span class="na">spec</span><span class="pi">:</span>
+  <span class="na">selector</span><span class="pi">:</span>
+    <span class="na">app</span><span class="pi">:</span> <span class="s">postgres</span>
+  <span class="na">ports</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="na">protocol</span><span class="pi">:</span> <span class="s">TCP</span>
+      <span class="na">port</span><span class="pi">:</span> <span class="m">5432</span>
+      <span class="na">targetPort</span><span class="pi">:</span> <span class="m">5432</span>
+
+<span class="nn">---</span>
+<span class="na">apiVersion</span><span class="pi">:</span> <span class="s">apps/v1</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">Deployment</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">postgres</span>
+<span class="na">spec</span><span class="pi">:</span>
+  <span class="na">replicas</span><span class="pi">:</span> <span class="m">1</span>
+  <span class="na">selector</span><span class="pi">:</span>
+    <span class="na">matchLabels</span><span class="pi">:</span>
+      <span class="na">app</span><span class="pi">:</span> <span class="s">postgres</span>
+  <span class="na">template</span><span class="pi">:</span>
+    <span class="na">metadata</span><span class="pi">:</span>
+      <span class="na">labels</span><span class="pi">:</span>
+        <span class="na">app</span><span class="pi">:</span> <span class="s">postgres</span>
+    <span class="na">spec</span><span class="pi">:</span>
+      <span class="na">containers</span><span class="pi">:</span>
+        <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">postgres</span>
+          <span class="na">image</span><span class="pi">:</span> <span class="s">postgres:17-alpine</span>
+          <span class="na">ports</span><span class="pi">:</span>
+            <span class="pi">-</span> <span class="na">containerPort</span><span class="pi">:</span> <span class="m">5432</span>
+          <span class="na">env</span><span class="pi">:</span>
+            <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">POSTGRES_USER</span>
+              <span class="na">value</span><span class="pi">:</span> <span class="s">app</span>
+            <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">POSTGRES_PASSWORD</span>
+              <span class="na">value</span><span class="pi">:</span> <span class="s">app</span>
+            <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">POSTGRES_DB</span>
+              <span class="na">value</span><span class="pi">:</span> <span class="s">db</span>
+          <span class="na">volumeMounts</span><span class="pi">:</span>
+            <span class="pi">-</span> <span class="na">mountPath</span><span class="pi">:</span> <span class="s">/var/lib/postgresql/data</span>
+              <span class="na">name</span><span class="pi">:</span> <span class="s">postgres-storage</span>
+          <span class="na">livenessProbe</span><span class="pi">:</span>
+            <span class="na">exec</span><span class="pi">:</span>
+              <span class="na">command</span><span class="pi">:</span>
+                <span class="pi">-</span> <span class="s">pg_isready</span>
+                <span class="pi">-</span> <span class="s">-U</span>
+                <span class="pi">-</span> <span class="s">app</span>
+            <span class="na">initialDelaySeconds</span><span class="pi">:</span> <span class="m">5</span>
+            <span class="na">periodSeconds</span><span class="pi">:</span> <span class="m">10</span>
+          <span class="na">readinessProbe</span><span class="pi">:</span>
+            <span class="na">exec</span><span class="pi">:</span>
+              <span class="na">command</span><span class="pi">:</span>
+                <span class="pi">-</span> <span class="s">pg_isready</span>
+                <span class="pi">-</span> <span class="s">-U</span>
+                <span class="pi">-</span> <span class="s">app</span>
+            <span class="na">initialDelaySeconds</span><span class="pi">:</span> <span class="m">3</span>
+            <span class="na">periodSeconds</span><span class="pi">:</span> <span class="m">5</span>
+      <span class="na">volumes</span><span class="pi">:</span>
+        <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">postgres-storage</span>
+          <span class="na">persistentVolumeClaim</span><span class="pi">:</span>
+            <span class="na">claimName</span><span class="pi">:</span> <span class="s">postgres-pvc</span></code></pre>
+</div>
+</div>
+</div>
+</details>
+<div class="paragraph">
+<p><strong>2.</strong> Deployment &amp; Service für die <strong>Quarkus-Applikation</strong></p>
+</div>
+<details>
+<summary class="title">Details</summary>
+<div class="content">
+<div class="listingblock">
+<div class="title">k8s/quarkus-app.yaml</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="yaml"><span class="na">apiVersion</span><span class="pi">:</span> <span class="s">apps/v1</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">Deployment</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">quarkus-app</span>
+<span class="na">spec</span><span class="pi">:</span>
+  <span class="na">replicas</span><span class="pi">:</span> <span class="m">1</span>
+  <span class="na">selector</span><span class="pi">:</span>
+    <span class="na">matchLabels</span><span class="pi">:</span>
+      <span class="na">app</span><span class="pi">:</span> <span class="s">quarkus</span>
+  <span class="na">template</span><span class="pi">:</span>
+    <span class="na">metadata</span><span class="pi">:</span>
+      <span class="na">labels</span><span class="pi">:</span>
+        <span class="na">app</span><span class="pi">:</span> <span class="s">quarkus</span>
+    <span class="na">spec</span><span class="pi">:</span>
+      <span class="na">imagePullSecrets</span><span class="pi">:</span>
+        <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">regcred</span>  <i class="conum" data-value="1"></i><b>(1)</b>
+      <span class="na">containers</span><span class="pi">:</span>
+        <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">quarkus-app</span>
+          <span class="na">image</span><span class="pi">:</span> <span class="s">ghcr.io/2425-5bhif-wmc/01-referate-marksuus/mp-health-demo:latest</span> <i class="conum" data-value="2"></i><b>(2)</b>
+          <span class="na">ports</span><span class="pi">:</span>
+            <span class="pi">-</span> <span class="na">containerPort</span><span class="pi">:</span> <span class="m">8080</span>
+          <span class="na">env</span><span class="pi">:</span>
+            <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">QUARKUS_DATASOURCE_JDBC_URL</span>
+              <span class="na">value</span><span class="pi">:</span> <span class="s">jdbc:postgresql://postgres:5432/db</span>
+            <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">QUARKUS_DATASOURCE_USERNAME</span>
+              <span class="na">value</span><span class="pi">:</span> <span class="s">app</span>
+            <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">QUARKUS_DATASOURCE_PASSWORD</span>
+              <span class="na">value</span><span class="pi">:</span> <span class="s">app</span>
+          <span class="na">startupProbe</span><span class="pi">:</span> <i class="conum" data-value="3"></i><b>(3)</b>
+            <span class="na">httpGet</span><span class="pi">:</span>
+              <span class="na">path</span><span class="pi">:</span> <span class="s">/q/health/started</span>
+              <span class="na">port</span><span class="pi">:</span> <span class="m">8080</span>
+            <span class="na">timeoutSeconds</span><span class="pi">:</span> <span class="m">5</span>
+            <span class="na">initialDelaySeconds</span><span class="pi">:</span> <span class="m">15</span>
+          <span class="na">livenessProbe</span><span class="pi">:</span> <i class="conum" data-value="4"></i><b>(4)</b>
+            <span class="na">httpGet</span><span class="pi">:</span>
+              <span class="na">path</span><span class="pi">:</span> <span class="s">/q/health/live</span>
+              <span class="na">port</span><span class="pi">:</span> <span class="m">8080</span>
+            <span class="na">initialDelaySeconds</span><span class="pi">:</span> <span class="m">5</span>
+            <span class="na">periodSeconds</span><span class="pi">:</span> <span class="m">10</span>
+          <span class="na">readinessProbe</span><span class="pi">:</span> <i class="conum" data-value="5"></i><b>(5)</b>
+            <span class="na">httpGet</span><span class="pi">:</span>
+              <span class="na">path</span><span class="pi">:</span> <span class="s">/q/health/ready</span>
+              <span class="na">port</span><span class="pi">:</span> <span class="m">8080</span>
+            <span class="na">initialDelaySeconds</span><span class="pi">:</span> <span class="m">3</span>
+            <span class="na">periodSeconds</span><span class="pi">:</span> <span class="m">5</span>
+
+<span class="nn">---</span>
+<span class="na">apiVersion</span><span class="pi">:</span> <span class="s">v1</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">Service</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">quarkus-service</span>
+<span class="na">spec</span><span class="pi">:</span>
+  <span class="na">selector</span><span class="pi">:</span>
+    <span class="na">app</span><span class="pi">:</span> <span class="s">quarkus</span>
+  <span class="na">ports</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="na">protocol</span><span class="pi">:</span> <span class="s">TCP</span>
+      <span class="na">port</span><span class="pi">:</span> <span class="m">8080</span>
+      <span class="na">targetPort</span><span class="pi">:</span> <span class="m">8080</span>
+  <span class="na">type</span><span class="pi">:</span> <span class="s">NodePort</span></code></pre>
+</div>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Dies wird bei nicht-öffentlichen Images benötigt. Hierbei greifen wir auf das vorhin angelegt Secret zu.</p>
+</li>
+<li>
+<p>Image-Name mit deinem ersetzen.</p>
+</li>
+<li>
+<p>Konfiguration der Startup-Probe. Als Endpunkt wird <code>/q/health/started</code> verwendet.</p>
+</li>
+<li>
+<p>Konfiguration der Liveness-Probe. Als Endpunkt wird <code>/q/health/live</code> verwendet.</p>
+</li>
+<li>
+<p>Konfiguration der Readiness-Probe. Als Endpunkt wird <code>/q/health/ready</code> verwendet.</p>
+</li>
+</ol>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<strong>initialDelaySeconds</strong>: Gibt an, wie lange Kubernetes nach dem Start des Containers wartet, bevor es die erste Probe durchführt.
+</td>
+</tr>
+</table>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<strong>periodSeconds</strong>: Gibt an, wie oft (in Sekunden) Kubernetes die Probe wiederholt.
+</td>
+</tr>
+</table>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<strong>timeoutSeconds</strong>: Gibt an, wie lange Kubernetes auf eine Antwort wartet, bevor die Probe als fehlgeschlagen gilt.
+</td>
+</tr>
+</table>
+</div>
+</div>
+</details>
+<div class="paragraph">
+<p><strong>3.</strong> <strong>Ingress</strong> für die Quarkus-Applikation</p>
+</div>
+<details>
+<summary class="title">Details</summary>
+<div class="content">
+<div class="listingblock">
+<div class="title">k8s/quarkus-ingress.yaml</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="yaml"><span class="na">apiVersion</span><span class="pi">:</span> <span class="s">networking.k8s.io/v1</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">Ingress</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">quarkus-ingress</span>
+  <span class="na">annotations</span><span class="pi">:</span>
+    <span class="na">nginx.ingress.kubernetes.io/enable-cors</span><span class="pi">:</span> <span class="s2">"</span><span class="s">true"</span>
+    <span class="na">nginx.ingress.kubernetes.io/cors-allow-methods</span><span class="pi">:</span> <span class="s2">"</span><span class="s">PUT,</span><span class="nv"> </span><span class="s">GET,</span><span class="nv"> </span><span class="s">POST,</span><span class="nv"> </span><span class="s">OPTIONS,</span><span class="nv"> </span><span class="s">DELETE"</span>
+    <span class="c1">#nginx.ingress.kubernetes.io/rewrite-target: /</span>
+<span class="na">spec</span><span class="pi">:</span>
+  <span class="na">ingressClassName</span><span class="pi">:</span> <span class="s">nginx</span>
+  <span class="na">rules</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="na">host</span><span class="pi">:</span> <span class="s">if200156.cloud.htl-leonding.ac.at</span> <i class="conum" data-value="1"></i><b>(1)</b>
+      <span class="na">http</span><span class="pi">:</span>
+        <span class="na">paths</span><span class="pi">:</span>
+          <span class="pi">-</span> <span class="na">path</span><span class="pi">:</span> <span class="s">/</span>
+            <span class="na">pathType</span><span class="pi">:</span> <span class="s">Prefix</span>
+            <span class="na">backend</span><span class="pi">:</span>
+              <span class="na">service</span><span class="pi">:</span>
+                <span class="na">name</span><span class="pi">:</span> <span class="s">quarkus-service</span>
+                <span class="na">port</span><span class="pi">:</span>
+                  <span class="na">number</span><span class="pi">:</span> <span class="s">8080</span></code></pre>
+</div>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Mit deinem Namespace ersetzen</p>
+</li>
+</ol>
+</div>
+</div>
+</details>
+</div>
+<div class="sect3">
+<h4 id="_resourcen_erstellen"><a class="anchor" href="#_resourcen_erstellen"></a>2.4.6. Resourcen erstellen</h4>
+<div class="listingblock">
+<div class="title">im Verzeichnis der Konfigurationsdateien (k8s)</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="bash">kubectl apply <span class="nt">-f</span> postgres.yaml
+kubectl apply <span class="nt">-f</span> quarkus-app.yaml
+kubectl apply <span class="nt">-f</span> quarkus-ingress.yaml</code></pre>
+</div>
 </div>
 </div>
 </div>
@@ -990,7 +1291,7 @@ Kubernetes nutzt <strong>Probes</strong> zur Überwachung von Containern: <stron
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2025-02-06 14:33:27 UTC
+Last updated 2025-02-06 18:12:23 UTC
 </div>
 </div>
 </body>
