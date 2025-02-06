@@ -1,5 +1,6 @@
 package at.htlleonding.healthchecks;
 
+import io.quarkus.arc.profile.IfBuildProfile;
 import jakarta.enterprise.context.ApplicationScoped;
 import org.eclipse.microprofile.health.HealthCheck;
 import org.eclipse.microprofile.health.HealthCheckResponse;
@@ -9,6 +10,7 @@ import java.util.Random;
 
 @Readiness
 @ApplicationScoped
+@IfBuildProfile("dev")
 public class CustomReadinessCheck implements HealthCheck {
     @Override
     public HealthCheckResponse call() {
