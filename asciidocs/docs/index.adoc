@@ -502,3 +502,5 @@ kubectl apply -f quarkus-ingress.yaml
 * https://quarkus.io/guides/smallrye-health[quarkus.io: SmallRye Health]
 * https://github.com/smallrye/smallrye-health[GitHub: SmallRye Health]
 * https://github.com/eclipse/microprofile-health/[GitHub: Eclipse MicroProfile Health]
+* https://cloud.htl-leonding.ac.at/html/user-manual.html[C. Aberger: LeoCloud User Manual]
+* https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/[kubernetes.io: Configure Liveness, Readiness and Startup Probes]

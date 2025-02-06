@@ -1,0 +1,1 @@
+leocloud get template dashboard | kubectl delete -f -
