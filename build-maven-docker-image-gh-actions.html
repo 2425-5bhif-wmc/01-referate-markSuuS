@@ -637,6 +637,9 @@ In diesem Ordner kommen alle Workflow-Konfigurationsdateien hinein.</p>
       <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">Build with Maven</span> <i class="conum" data-value="5"></i><b>(5)</b>
         <span class="na">run</span><span class="pi">:</span> <span class="s">mvn -f microprofile-health-demo/pom.xml clean package -Dmaven.test.skip=true</span>
 
+      <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">Set up docker buildx</span>
+        <span class="na">uses</span><span class="pi">:</span> <span class="s">docker/setup-buildx-action@v3</span>
+
       <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">Login to GitHub Container Registry</span> <i class="conum" data-value="6"></i><b>(6)</b>
         <span class="na">uses</span><span class="pi">:</span> <span class="s">docker/login-action@v3</span>
         <span class="na">with</span><span class="pi">:</span>
@@ -666,7 +669,7 @@ In diesem Ordner kommen alle Workflow-Konfigurationsdateien hinein.</p>
 <p>Das Repository wird hier auf den Runner ausgecheckt.</p>
 </li>
 <li>
-<p>Am Runner wird Temurin 21 LTS installiert</p>
+<p>Am Runner wird Temurin 21 LTS installiert.</p>
 </li>
 <li>
 <p>Hier wird ein Package aus dem Maven-Projekt erstellt. Hierbei ist aufzupassen, den Pfad zur <code>pom.xml</code> richtig zu setzen.</p>
@@ -684,7 +687,7 @@ In diesem Ordner kommen alle Workflow-Konfigurationsdateien hinein.</p>
 <p>Als <code>file</code> wird das Dockerfile des Maven-Projektes angegeben (normalerweise in <code>src/main/docker</code>)</p>
 </li>
 <li>
-<p>Hier wird festgelegt, wohin genau das Image gepusht werden soll (normalerweise im Repository des Projektes).</p>
+<p>Hier wird festgelegt, wohin genau das Image gepusht werden soll (normalerweise ins Repository des Projektes).</p>
 </li>
 </ol>
 </div>
@@ -693,7 +696,7 @@ In diesem Ordner kommen alle Workflow-Konfigurationsdateien hinein.</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2025-02-06 14:10:12 UTC
+Last updated 2025-02-06 14:15:04 UTC
 </div>
 </div>
 </body>
