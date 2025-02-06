@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: quarkus-app
 spec:
-  replicas: 1
+  replicas: 4
   selector:
     matchLabels:
       app: quarkus
@@ -30,18 +30,18 @@ spec:
             httpGet:
               path: /q/health/live
               port: 8080
-            initialDelaySeconds: 5    # Warte 5 Sekunden nach dem Start, bevor die erste Prüfung erfolgt
-            periodSeconds: 10         # Alle 10 Sekunden wird die Probe wiederholt
-            timeoutSeconds: 2         # Die App hat 2 Sekunden Zeit zu antworten, bevor sie als "failed" gilt
-            failureThreshold: 3       # Nach 3 Fehlschlägen startet Kubernetes den Container neu
+            initialDelaySeconds: 5
+            periodSeconds: 2
+            timeoutSeconds: 2
+            failureThreshold: 3
           readinessProbe:
             httpGet:
               path: /q/health/ready
               port: 8080
-            initialDelaySeconds: 3    # Bereits nach 3 Sekunden prüfen, ob die App Traffic verarbeiten kann
-            periodSeconds: 5         # Alle 5 Sekunden wird die Probe wiederholt
-            timeoutSeconds: 2        # Die App hat 2 Sekunden Zeit zu antworten
-            failureThreshold: 2      # Nach 2 Fehlschlägen wird der Container aus dem Load Balancer entfernt
+            initialDelaySeconds: 3
+            periodSeconds: 2
+            timeoutSeconds: 2
+            failureThreshold: 3
           startupProbe:
             httpGet:
               path: /q/health/started
