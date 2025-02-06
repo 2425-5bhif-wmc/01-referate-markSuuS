@@ -1,8 +1,17 @@
-= GitHub Actions: Docker Image einer Maven Applikation bauen
+= GitHub Actions: Docker Image einer Quarkus Applikation bauen
+
+== JAR-Typ anpassen
+Wenn wir ein Package erstellen, wollen wir ein Uber-JAR bekommen, da es bereits alle benötigten Libraries enthält und nichts vorinstalliert sein muss.
+
+.<maven-root>/src/main/resources/application.properties
+[source, properties]
+----
+quarkus.package.jar.type=uber-jar
+----
 
 == Dockerfile
 
-Wir verwenden folgendes Dockerfile für unsere Maven-Applikation und speichern es in `src/main/docker`
+Wir verwenden folgendes Dockerfile für unsere Quarkus-Applikation und speichern es in `src/main/docker`
 
 .<maven-root>/src/main/docker/Dockerfile
 [source,dockerfile]
@@ -24,7 +33,7 @@ In diesem Ordner kommen alle Workflow-Konfigurationsdateien hinein.
 ..github/workflows/build-quarkus-image.yaml
 [source, yaml]
 ----
-name: GitHub Actions - Building Docker Images from Maven Project
+name: GitHub Actions - Building Docker Images from Quarkus Project
 run-name: ${{ github.actor }} is building Docker Images 🐋 using GitHub Actions 🚀
 on: [push]
 jobs:
@@ -55,9 +64,6 @@ jobs:
       - name: Build with Maven #<5>
         run: mvn -f microprofile-health-demo/pom.xml clean package -Dmaven.test.skip=true
 
-      - name: Set up docker buildx
-        uses: docker/setup-buildx-action@v3
-
       - name: Login to GitHub Container Registry #<6>
         uses: docker/login-action@v3
         with:
@@ -73,7 +79,6 @@ jobs:
           platforms: linux/amd64
           push: true
           tags: ghcr.io/${{ env.REPO_LC }}/mp-health-demo:latest #<10>
-
 ----
 1. Um Probleme mit Groß-/Kleinschreibung entgegenzuwirken, benutzen wir für den Actor und den Repository-Namen ausschließlich Kleibuchstaben. Diese werden als Umgebungsvariablen gespeichert.
 2. Test-Ausgabe des Actors und des Repositories.
@@ -85,3 +90,7 @@ jobs:
 8. Als `context` muss das Root-Verzeichnis des Maven-Projektes angegeben werden.
 9. Als `file` wird das Dockerfile des Maven-Projektes angegeben (normalerweise in `src/main/docker`)
 10. Hier wird festgelegt, wohin genau das Image gepusht werden soll (normalerweise ins Repository des Projektes).
+
+== Zugriff verwalten
+
+Falls gewünscht kann im Repository beim Package in den Package Settings die Visibility geändert werden (private/public/internal)

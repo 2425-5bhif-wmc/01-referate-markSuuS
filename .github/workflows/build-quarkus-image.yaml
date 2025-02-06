@@ -1,4 +1,4 @@
-name: GitHub Actions - Building Docker Images from Maven Project
+name: GitHub Actions - Building Docker Images from Quarkus Project
 run-name: ${{ github.actor }} is building Docker Images 🐋 using GitHub Actions 🚀
 on: [push]
 jobs:

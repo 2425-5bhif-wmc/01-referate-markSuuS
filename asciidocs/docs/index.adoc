@@ -150,7 +150,7 @@ Anzeige aller Checks:
 
 NOTE: Wenn wir zu unserem Projekt eine JDBC-Datasource hinzufügen, wird automatisch ein Health Check (Readiness) erstellt, der die Verbindung zur Datenbank prüft. Hier wird dies mit einer PostgreSQL-DB demonstriert.
 
-Siehe auch: link:quarkus-add-jdbc-postgres-source.html[Quarkus: JDBC Datasource hinzufügen - mit PostgreSQL als Beispiel]
+Siehe auch: link:quarkus-add-jdbc-postgres-source[Quarkus: JDBC Datasource hinzufügen - mit PostgreSQL als Beispiel]
 
 *Bei den Readiness-Checks ist nun auch sichtbar, ob die Datenbank-Verbindung aufrecht ist:*
 
@@ -245,7 +245,7 @@ Kubernetes nutzt **Probes** zur Überwachung von Containern: **Liveness** für N
 
 ==== Docker Image bauen
 
-Siehe auch: link:build-maven-docker-image-gh-actions.html[GitHub Actions: Docker Image einer Maven Applikation bauen]
+Siehe auch: link:quarkus-build-docker-image[GitHub Actions: Docker Image einer Quarkus Applikation bauen]
 
 == Quellen und Links
 * https://quarkus.io/guides/smallrye-health[quarkus.io: SmallRye Health]
