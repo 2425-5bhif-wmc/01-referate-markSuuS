@@ -596,7 +596,7 @@ pre.rouge .gs {
 <blockquote>
 Unter Health Monitoring versteht man den Prozess der Überprüfung des Zustands einer Anwendung,
 um sicherzustellen, dass sie ordnungsgemäß und zuverlässig funktioniert.
-Dabei wird die Fähigkeit der Anwendung verfolgt, zu starten, auszuführen und Datenverkehr effektiv zu verarbeiten.
+Dabei wird die Fähigkeit der Anwendung verfolgt, zu starten, auszuführen und den Datenverkehr effektiv zu verarbeiten.
 Health Monitoring ist ein Eckpfeiler des modernen Anwendungsmanagements,
 insbesondere in verteilten und Cloud-nativen Umgebungen.
 </blockquote>
@@ -626,6 +626,12 @@ insbesondere in verteilten und Cloud-nativen Umgebungen.
 <p>Spezifikation im MicroProfile-Ökosystem, bietet standardisierte Möglichkeit zur Implementierung von Health-Checks</p>
 </li>
 </ul>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="images/microrprofile-standards.png" alt="microrprofile standards">
+</div>
+<div class="title">Figure 1. MicroProfile Specifications (<a href="https://microprofile.io/2021/12/07/microprofile-5-0-release/" class="bare">https://microprofile.io/2021/12/07/microprofile-5-0-release/</a>)</div>
 </div>
 </div>
 <div class="sect2">
@@ -896,7 +902,7 @@ Wenn wir zu unserem Projekt eine JDBC-Datasource hinzufügen, wird automatisch e
 <div class="sect2">
 <h3 id="_eigene_health_checks_erstellen"><a class="anchor" href="#_eigene_health_checks_erstellen"></a>2.3. Eigene Health-Checks erstellen</h3>
 <div class="paragraph">
-<p>Es ist auch möglich in Quarkus eigene Health-Checks zu erstellen.
+<p>Quarkus bietet die Möglichkeit, eigene Health-Checks zu erstellen.
 Dabei implementiert deine Health-Check-Klasse das Interface <code>HealthCheck</code> und trägt die <code>@Liveness</code>, <code>@Readiness</code> oder <code>@Startup</code> Annotation - je nach dem welche Art von Health-Check gefordert ist.</p>
 </div>
 <div class="sect3">
@@ -1285,6 +1291,18 @@ kubectl apply <span class="nt">-f</span> quarkus-app.yaml
 kubectl apply <span class="nt">-f</span> quarkus-ingress.yaml</code></pre>
 </div>
 </div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+Du kannst den Status der Deployments/Pods/Ingresses z.B. mit <code>watch -n 2 kubectl get pods|deployments|ingress</code> beobachten.
+</td>
+</tr>
+</table>
+</div>
 </div>
 </div>
 <div class="sect2">
@@ -1316,10 +1334,16 @@ kubectl apply <span class="nt">-f</span> quarkus-ingress.yaml</code></pre>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Startup</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Ist die App noch im Startprozess?</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Solange die Startup Probe fehlschlägt, ignoriert Kubernetes Liveness und Readiness.</strong> Erst wenn die Startup Probe erfolgreich ist, starten die anderen Probes.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Solange die Startup Probe fehlschlägt, werden die Readiness- &amp; Liveness-Probes ignoriert.</strong> Erst wenn die Startup Probe erfolgreich ist, starten die anderen Probes.</p></td>
 </tr>
 </tbody>
 </table>
+<div class="imageblock">
+<div class="content">
+<img src="images/k8s-probes.png" alt="k8s probes">
+</div>
+<div class="title">Figure 2. Kubernetes Probes Workflow (<a href="https://images.prismic.io/qovery/65ddb31a3a605798c18c52f9_unnamed-20-.png?auto=format,compress" class="bare">https://images.prismic.io/qovery/65ddb31a3a605798c18c52f9_unnamed-20-.png?auto=format,compress</a>)</div>
+</div>
 </div>
 </div>
 </div>
@@ -1347,6 +1371,12 @@ kubectl apply <span class="nt">-f</span> quarkus-ingress.yaml</code></pre>
 <p><a href="https://github.com/smallrye/smallrye-health">GitHub: SmallRye Health</a></p>
 </li>
 <li>
+<p><a href="https://smallrye.io/docs/smallrye-health/3.0.1/index.html">SmallRye Health Documentation</a></p>
+</li>
+<li>
+<p><a href="https://microprofile.io/">microprofile.io</a></p>
+</li>
+<li>
 <p><a href="https://github.com/eclipse/microprofile-health/">GitHub: Eclipse MicroProfile Health</a></p>
 </li>
 <li>
@@ -1362,7 +1392,7 @@ kubectl apply <span class="nt">-f</span> quarkus-ingress.yaml</code></pre>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2025-02-07 10:28:19 UTC
+Last updated 2025-02-07 10:46:00 UTC
 </div>
 </div>
 </body>
