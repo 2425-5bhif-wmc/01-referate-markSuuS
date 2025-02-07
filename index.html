@@ -759,7 +759,7 @@ insbesondere in verteilten und Cloud-nativen Umgebungen.
 <i class="fa icon-tip" title="Tip"></i>
 </td>
 <td class="content">
-Mit <code>GET /q/health</code> werden alle Health-Checks angezeigt. Du kannst diese Endpoints nun ausprobieren.
+Mit <code>GET /q/health</code> werden alle Health-Checks angezeigt. Du kannst diese Endpoints nun ausprobieren. <code>/q/health-ui</code> zeigt eine UI zur Darstellung der Checks an.
 </td>
 </tr>
 </table>
@@ -1102,7 +1102,7 @@ Kubernetes nutzt <strong>Probes</strong> zur Überwachung von Containern: <stron
 <span class="na">metadata</span><span class="pi">:</span>
   <span class="na">name</span><span class="pi">:</span> <span class="s">quarkus-app</span>
 <span class="na">spec</span><span class="pi">:</span>
-  <span class="na">replicas</span><span class="pi">:</span> <span class="m">1</span>
+  <span class="na">replicas</span><span class="pi">:</span> <span class="m">4</span>
   <span class="na">selector</span><span class="pi">:</span>
     <span class="na">matchLabels</span><span class="pi">:</span>
       <span class="na">app</span><span class="pi">:</span> <span class="s">quarkus</span>
@@ -1111,8 +1111,8 @@ Kubernetes nutzt <strong>Probes</strong> zur Überwachung von Containern: <stron
       <span class="na">labels</span><span class="pi">:</span>
         <span class="na">app</span><span class="pi">:</span> <span class="s">quarkus</span>
     <span class="na">spec</span><span class="pi">:</span>
-      <span class="na">imagePullSecrets</span><span class="pi">:</span>
-        <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">regcred</span>  <i class="conum" data-value="1"></i><b>(1)</b>
+      <span class="na">imagePullSecrets</span><span class="pi">:</span> <i class="conum" data-value="1"></i><b>(1)</b>
+        <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">regcred</span>
       <span class="na">containers</span><span class="pi">:</span>
         <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">quarkus-app</span>
           <span class="na">image</span><span class="pi">:</span> <span class="s">ghcr.io/2425-5bhif-wmc/01-referate-marksuus/mp-health-demo:latest</span> <i class="conum" data-value="2"></i><b>(2)</b>
@@ -1129,26 +1129,26 @@ Kubernetes nutzt <strong>Probes</strong> zur Überwachung von Containern: <stron
             <span class="na">httpGet</span><span class="pi">:</span>
               <span class="na">path</span><span class="pi">:</span> <span class="s">/q/health/live</span>
               <span class="na">port</span><span class="pi">:</span> <span class="m">8080</span>
-            <span class="na">initialDelaySeconds</span><span class="pi">:</span> <span class="m">5</span>    <span class="c1"># Warte 5 Sekunden nach dem Start, bevor die erste Prüfung erfolgt</span>
-            <span class="na">periodSeconds</span><span class="pi">:</span> <span class="m">10</span>         <span class="c1"># Alle 10 Sekunden wird die Probe wiederholt</span>
-            <span class="na">timeoutSeconds</span><span class="pi">:</span> <span class="m">2</span>         <span class="c1"># Die App hat 2 Sekunden Zeit zu antworten, bevor sie als "failed" gilt</span>
-            <span class="na">failureThreshold</span><span class="pi">:</span> <span class="m">3</span>       <span class="c1"># Nach 3 Fehlschlägen startet Kubernetes den Container neu</span>
+            <span class="na">initialDelaySeconds</span><span class="pi">:</span> <span class="m">5</span>
+            <span class="na">periodSeconds</span><span class="pi">:</span> <span class="m">2</span>
+            <span class="na">timeoutSeconds</span><span class="pi">:</span> <span class="m">2</span>
+            <span class="na">failureThreshold</span><span class="pi">:</span> <span class="m">3</span>
           <span class="na">readinessProbe</span><span class="pi">:</span> <i class="conum" data-value="4"></i><b>(4)</b>
             <span class="na">httpGet</span><span class="pi">:</span>
               <span class="na">path</span><span class="pi">:</span> <span class="s">/q/health/ready</span>
               <span class="na">port</span><span class="pi">:</span> <span class="m">8080</span>
-            <span class="na">initialDelaySeconds</span><span class="pi">:</span> <span class="m">3</span>    <span class="c1"># Bereits nach 3 Sekunden prüfen, ob die App Traffic verarbeiten kann</span>
-            <span class="na">periodSeconds</span><span class="pi">:</span> <span class="m">5</span>         <span class="c1"># Alle 5 Sekunden wird die Probe wiederholt</span>
-            <span class="na">timeoutSeconds</span><span class="pi">:</span> <span class="m">2</span>        <span class="c1"># Die App hat 2 Sekunden Zeit zu antworten</span>
-            <span class="na">failureThreshold</span><span class="pi">:</span> <span class="m">2</span>      <span class="c1"># Nach 2 Fehlschlägen wird der Container aus dem Load Balancer entfernt</span>
+            <span class="na">initialDelaySeconds</span><span class="pi">:</span> <span class="m">3</span>
+            <span class="na">periodSeconds</span><span class="pi">:</span> <span class="m">2</span>
+            <span class="na">timeoutSeconds</span><span class="pi">:</span> <span class="m">2</span>
+            <span class="na">failureThreshold</span><span class="pi">:</span> <span class="m">3</span>
           <span class="na">startupProbe</span><span class="pi">:</span> <i class="conum" data-value="5"></i><b>(5)</b>
             <span class="na">httpGet</span><span class="pi">:</span>
               <span class="na">path</span><span class="pi">:</span> <span class="s">/q/health/started</span>
               <span class="na">port</span><span class="pi">:</span> <span class="m">8080</span>
-            <span class="na">initialDelaySeconds</span><span class="pi">:</span> <span class="m">0</span>    <span class="c1"># Sofort nach dem Start prüfen</span>
-            <span class="na">periodSeconds</span><span class="pi">:</span> <span class="m">5</span>         <span class="c1"># Alle 5 Sekunden wird geprüft, ob die App vollständig gestartet ist</span>
-            <span class="na">timeoutSeconds</span><span class="pi">:</span> <span class="m">3</span>        <span class="c1"># Die App hat 3 Sekunden Zeit zu antworten</span>
-            <span class="na">failureThreshold</span><span class="pi">:</span> <span class="m">30</span>     <span class="c1"># Erlaubt 30 Fehlschläge = maximal 150 Sekunden (30 * 5s), bevor der Container neu gestartet wird</span>
+            <span class="na">initialDelaySeconds</span><span class="pi">:</span> <span class="m">0</span>
+            <span class="na">periodSeconds</span><span class="pi">:</span> <span class="m">5</span>
+            <span class="na">timeoutSeconds</span><span class="pi">:</span> <span class="m">3</span>
+            <span class="na">failureThreshold</span><span class="pi">:</span> <span class="m">30</span>
 <span class="nn">---</span>
 <span class="na">apiVersion</span><span class="pi">:</span> <span class="s">v1</span>
 <span class="na">kind</span><span class="pi">:</span> <span class="s">Service</span>
@@ -1215,6 +1215,18 @@ Kubernetes nutzt <strong>Probes</strong> zur Überwachung von Containern: <stron
 </td>
 <td class="content">
 <strong>timeoutSeconds</strong>: Gibt an, wie lange Kubernetes auf eine Antwort wartet, bevor die Probe als fehlgeschlagen gilt.
+</td>
+</tr>
+</table>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<strong>failureThreshold</strong>: Gibt an, wie oft die Probe fehlschlagen darf, bis der Pod als gescheitert gilt.
 </td>
 </tr>
 </table>
@@ -1350,7 +1362,7 @@ kubectl apply <span class="nt">-f</span> quarkus-ingress.yaml</code></pre>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2025-02-06 19:16:20 UTC
+Last updated 2025-02-07 10:28:19 UTC
 </div>
 </div>
 </body>
