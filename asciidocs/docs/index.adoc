@@ -503,10 +503,22 @@ TIP: Du kannst den Status der Deployments/Pods/Ingresses z.B. mit `watch -n 2 ku
 .Kubernetes Probes Workflow (https://images.prismic.io/qovery/65ddb31a3a605798c18c52f9_unnamed-20-.png?auto=format,compress)
 image::k8s-probes.png[]
 
+=== Demonstration
+* Qute Template auf `/health-view` verfügbar
+** Buttons zum Trigger eines Readiness-/Livenessfehlschlages
+* Verhalten währenddessen im k8s Dashboard einsehbar
+
 
 == Begriffsklärung
 
-* Load Balancer: Der Load Balancer ist eine Kubernetes-Komponente, die den eingehenden Traffic auf mehrere laufende Pods verteilt. Dadurch werden die Last und Anfragen optimal verteilt, um eine hohe Verfügbarkeit und Skalierbarkeit sicherzustellen.
+* *Cluster:* Ein Cluster ist eine Gruppe von Nodes, die gemeinsam von Kubernetes verwaltet werden. Es stellt eine skalierbare Umgebung für die Bereitstellung, Verwaltung und Orchestrierung von Containern bereit (z.B.: *LeoCloud*, Azure AKS, Amazon EKS, Google GKE).
+* *Service*: Ein Service stellt eine stabile Netzwerkadresse für eine Gruppe von Pods bereit. Er ermöglicht die Kommunikation zwischen Diensten innerhalb des Clusters und optional den externen Zugriff.
+* *Deployment*: Ein Deployment verwaltet die Bereitstellung und Skalierung von Pods. Es sorgt für Ausfallsicherheit, automatische Neustarts und ermöglicht Rollbacks sowie Updates.
+* *Ingress*: Ein Ingress ist ein HTTP(S)-Router, der Anfragen basierend auf definierten Regeln an verschiedene Services weiterleitet. Er ermöglicht den externen Zugriff auf Anwendungen innerhalb des Clusters.
+* *Pod:* Ein Pod ist die kleinste ausführbare Einheit in Kubernetes und enthält einen oder mehrere Container, die gemeinsam Ressourcen wie Netzwerk und Speicher nutzen.
+* *Container:* Ein Container ist eine isolierte Laufzeitumgebung, die eine Anwendung mit allen benötigten Abhängigkeiten enthält. Kubernetes verwaltet Container innerhalb von Pods.
+* *Node:* Ein Node ist ein physischer oder virtueller Rechner im Kubernetes-Cluster, auf dem Pods ausgeführt werden. Jeder Node enthält eine Kubelet-Instanz, die die Pods steuert und mit dem Cluster kommuniziert.
+* *Load Balancer*: Der Load Balancer ist eine Kubernetes-Komponente, die den eingehenden Traffic auf mehrere laufende Pods verteilt. Dadurch werden die Last und Anfragen optimal verteilt, um eine hohe Verfügbarkeit und Skalierbarkeit sicherzustellen.
 
 == Quellen und Links
 * https://quarkus.io/guides/smallrye-health[quarkus.io: SmallRye Health]
