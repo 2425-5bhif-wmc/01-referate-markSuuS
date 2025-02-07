@@ -579,6 +579,7 @@ pre.rouge .gs {
 <li><a href="#_eigene_health_checks_erstellen">2.3. Eigene Health-Checks erstellen</a></li>
 <li><a href="#_smallrye_health_für_probes_in_kubernetes_verwenden">2.4. SmallRye Health für Probes in Kubernetes verwenden</a></li>
 <li><a href="#_was_macht_kubernetes_nun_wenn_eine_der_probes_fehlschlägt">2.5. <strong>Was macht Kubernetes nun, wenn eine der Probes fehlschlägt?</strong></a></li>
+<li><a href="#_demonstration">2.6. Demonstration</a></li>
 </ul>
 </li>
 <li><a href="#_begriffsklärung">3. Begriffsklärung</a></li>
@@ -1345,6 +1346,26 @@ Du kannst den Status der Deployments/Pods/Ingresses z.B. mit <code>watch -n 2 ku
 <div class="title">Figure 2. Kubernetes Probes Workflow (<a href="https://images.prismic.io/qovery/65ddb31a3a605798c18c52f9_unnamed-20-.png?auto=format,compress" class="bare">https://images.prismic.io/qovery/65ddb31a3a605798c18c52f9_unnamed-20-.png?auto=format,compress</a>)</div>
 </div>
 </div>
+<div class="sect2">
+<h3 id="_demonstration"><a class="anchor" href="#_demonstration"></a>2.6. Demonstration</h3>
+<div class="ulist">
+<ul>
+<li>
+<p>Qute Template auf <code>/health-view</code> verfügbar</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Buttons zum Trigger eines Readiness-/Livenessfehlschlages</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Verhalten währenddessen im k8s Dashboard einsehbar</p>
+</li>
+</ul>
+</div>
+</div>
 </div>
 </div>
 <div class="sect1">
@@ -1353,7 +1374,28 @@ Du kannst den Status der Deployments/Pods/Ingresses z.B. mit <code>watch -n 2 ku
 <div class="ulist">
 <ul>
 <li>
-<p>Load Balancer: Der Load Balancer ist eine Kubernetes-Komponente, die den eingehenden Traffic auf mehrere laufende Pods verteilt. Dadurch werden die Last und Anfragen optimal verteilt, um eine hohe Verfügbarkeit und Skalierbarkeit sicherzustellen.</p>
+<p><strong>Cluster:</strong> Ein Cluster ist eine Gruppe von Nodes, die gemeinsam von Kubernetes verwaltet werden. Es stellt eine skalierbare Umgebung für die Bereitstellung, Verwaltung und Orchestrierung von Containern bereit (z.B.: <strong>LeoCloud</strong>, Azure AKS, Amazon EKS, Google GKE).</p>
+</li>
+<li>
+<p><strong>Service</strong>: Ein Service stellt eine stabile Netzwerkadresse für eine Gruppe von Pods bereit. Er ermöglicht die Kommunikation zwischen Diensten innerhalb des Clusters und optional den externen Zugriff.</p>
+</li>
+<li>
+<p><strong>Deployment</strong>: Ein Deployment verwaltet die Bereitstellung und Skalierung von Pods. Es sorgt für Ausfallsicherheit, automatische Neustarts und ermöglicht Rollbacks sowie Updates.</p>
+</li>
+<li>
+<p><strong>Ingress</strong>: Ein Ingress ist ein HTTP(S)-Router, der Anfragen basierend auf definierten Regeln an verschiedene Services weiterleitet. Er ermöglicht den externen Zugriff auf Anwendungen innerhalb des Clusters.</p>
+</li>
+<li>
+<p><strong>Pod:</strong> Ein Pod ist die kleinste ausführbare Einheit in Kubernetes und enthält einen oder mehrere Container, die gemeinsam Ressourcen wie Netzwerk und Speicher nutzen.</p>
+</li>
+<li>
+<p><strong>Container:</strong> Ein Container ist eine isolierte Laufzeitumgebung, die eine Anwendung mit allen benötigten Abhängigkeiten enthält. Kubernetes verwaltet Container innerhalb von Pods.</p>
+</li>
+<li>
+<p><strong>Node:</strong> Ein Node ist ein physischer oder virtueller Rechner im Kubernetes-Cluster, auf dem Pods ausgeführt werden. Jeder Node enthält eine Kubelet-Instanz, die die Pods steuert und mit dem Cluster kommuniziert.</p>
+</li>
+<li>
+<p><strong>Load Balancer</strong>: Der Load Balancer ist eine Kubernetes-Komponente, die den eingehenden Traffic auf mehrere laufende Pods verteilt. Dadurch werden die Last und Anfragen optimal verteilt, um eine hohe Verfügbarkeit und Skalierbarkeit sicherzustellen.</p>
 </li>
 </ul>
 </div>
@@ -1392,7 +1434,7 @@ Du kannst den Status der Deployments/Pods/Ingresses z.B. mit <code>watch -n 2 ku
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2025-02-07 10:46:00 UTC
+Last updated 2025-02-07 10:59:47 UTC
 </div>
 </div>
 </body>
