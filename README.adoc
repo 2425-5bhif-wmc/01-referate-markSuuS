@@ -9,3 +9,9 @@
 * Secret mit kubectl erstellen
 * PostgreSQL und Quarkus mit Ingress auf k8s (Leocloud) deployen
 * Verhalten von k8s bei Fehlschlägen
+* Demonstration mittels implementierten Dashboard
+
+== Ressourcen
+* link:microprofile-health-demo[Demo-Projekt mit JDBC-Check und 1 Liveness- + 1 Readiness-Check, die mit REST manipulierbar sind]
+* link:health-demo-class[Vor der Klasse implementiertes Demo-Projekt mit JDBC-Check und 1 Readiness-Check mit random Ausgang]
+* link:https://2425-5bhif-wmc.github.io/01-referate-markSuuS/[Dokumentation]
