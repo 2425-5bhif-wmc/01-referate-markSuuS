@@ -96,7 +96,7 @@ Der Import der `smallrye-health` Extension stellt direkt 3 REST-Endpunkte bereit
 * Zeigt an, ob der vollständige Startprozess abgeschlossen ist.
 * Dies geschieht, nachdem alle Startup-Beans und StartupEvent-Listener vollständig ausgeführt wurden.
 
-TIP: Mit `GET /q/health` werden alle Health-Checks angezeigt. Du kannst diese Endpoints nun ausprobieren.
+TIP: Mit `GET /q/health` werden alle Health-Checks angezeigt. Du kannst diese Endpoints nun ausprobieren. `/q/health-ui` zeigt eine UI zur Darstellung der Checks an.
 
 Anzeige aller Checks:
 [%collapsible]
@@ -351,7 +351,6 @@ spec:
         - name: postgres-storage
           persistentVolumeClaim:
             claimName: postgres-pvc
-
 ----
 ====
 
@@ -367,7 +366,7 @@ kind: Deployment
 metadata:
   name: quarkus-app
 spec:
-  replicas: 1
+  replicas: 4
   selector:
     matchLabels:
       app: quarkus
@@ -376,8 +375,8 @@ spec:
       labels:
         app: quarkus
     spec:
-      imagePullSecrets:
-        - name: regcred  #<1>
+      imagePullSecrets: #<1>
+        - name: regcred
       containers:
         - name: quarkus-app
           image: ghcr.io/2425-5bhif-wmc/01-referate-marksuus/mp-health-demo:latest #<2>
@@ -394,26 +393,26 @@ spec:
             httpGet:
               path: /q/health/live
               port: 8080
-            initialDelaySeconds: 5    # Warte 5 Sekunden nach dem Start, bevor die erste Prüfung erfolgt
-            periodSeconds: 10         # Alle 10 Sekunden wird die Probe wiederholt
-            timeoutSeconds: 2         # Die App hat 2 Sekunden Zeit zu antworten, bevor sie als "failed" gilt
-            failureThreshold: 3       # Nach 3 Fehlschlägen startet Kubernetes den Container neu
+            initialDelaySeconds: 5
+            periodSeconds: 2
+            timeoutSeconds: 2
+            failureThreshold: 3
           readinessProbe: #<4>
             httpGet:
               path: /q/health/ready
               port: 8080
-            initialDelaySeconds: 3    # Bereits nach 3 Sekunden prüfen, ob die App Traffic verarbeiten kann
-            periodSeconds: 5         # Alle 5 Sekunden wird die Probe wiederholt
-            timeoutSeconds: 2        # Die App hat 2 Sekunden Zeit zu antworten
-            failureThreshold: 2      # Nach 2 Fehlschlägen wird der Container aus dem Load Balancer entfernt
+            initialDelaySeconds: 3
+            periodSeconds: 2
+            timeoutSeconds: 2
+            failureThreshold: 3
           startupProbe: #<5>
             httpGet:
               path: /q/health/started
               port: 8080
-            initialDelaySeconds: 0    # Sofort nach dem Start prüfen
-            periodSeconds: 5         # Alle 5 Sekunden wird geprüft, ob die App vollständig gestartet ist
-            timeoutSeconds: 3        # Die App hat 3 Sekunden Zeit zu antworten
-            failureThreshold: 30     # Erlaubt 30 Fehlschläge = maximal 150 Sekunden (30 * 5s), bevor der Container neu gestartet wird
+            initialDelaySeconds: 0
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 30
 ---
 apiVersion: v1
 kind: Service
@@ -427,6 +426,7 @@ spec:
       port: 8080
       targetPort: 8080
   type: NodePort
+
 ----
 1. Dies wird bei nicht-öffentlichen Images benötigt. Hierbei greifen wir auf das vorhin angelegt Secret zu.
 2. Image-Name mit deinem ersetzen.
@@ -439,6 +439,8 @@ NOTE: *initialDelaySeconds*: Gibt an, wie lange Kubernetes nach dem Start des Co
 NOTE: *periodSeconds*: Gibt an, wie oft (in Sekunden) Kubernetes die Probe wiederholt.
 
 NOTE: *timeoutSeconds*: Gibt an, wie lange Kubernetes auf eine Antwort wartet, bevor die Probe als fehlgeschlagen gilt.
+
+NOTE: *failureThreshold*: Gibt an, wie oft die Probe fehlschlagen darf, bis der Pod als gescheitert gilt.
 ====
 
 *3.* *Ingress* für die Quarkus-Applikation
