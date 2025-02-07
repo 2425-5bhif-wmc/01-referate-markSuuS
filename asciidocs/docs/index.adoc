@@ -490,7 +490,7 @@ kubectl apply -f quarkus-ingress.yaml
 
 TIP: Du kannst den Status der Deployments/Pods/Ingresses z.B. mit `watch -n 2 kubectl get pods|deployments|ingress` beobachten.
 
-=== *Was macht Kubernetes nun, wenn eine der Probes fehlschlägt?*
+=== Was macht Kubernetes nun, wenn eine der Probes fehlschlägt?
 
 [options="header"]
 |===
