@@ -13,7 +13,7 @@ ifndef::imagesdir[:imagesdir: images]
 [quote]
 Unter Health Monitoring versteht man den Prozess der Überprüfung des Zustands einer Anwendung,
 um sicherzustellen, dass sie ordnungsgemäß und zuverlässig funktioniert.
-Dabei wird die Fähigkeit der Anwendung verfolgt, zu starten, auszuführen und Datenverkehr effektiv zu verarbeiten.
+Dabei wird die Fähigkeit der Anwendung verfolgt, zu starten, auszuführen und den Datenverkehr effektiv zu verarbeiten.
 Health Monitoring ist ein Eckpfeiler des modernen Anwendungsmanagements,
 insbesondere in verteilten und Cloud-nativen Umgebungen.
 
@@ -24,6 +24,9 @@ insbesondere in verteilten und Cloud-nativen Umgebungen.
 
 === Eclipse MicroProfile Health
 * Spezifikation im MicroProfile-Ökosystem, bietet standardisierte Möglichkeit zur Implementierung von Health-Checks
+
+.MicroProfile Specifications (https://microprofile.io/2021/12/07/microprofile-5-0-release/)
+image::microrprofile-standards.png[]
 
 === SmallRye Health
 * konkrete Implementierung der Eclipse MicroProfile Health API
@@ -198,7 +201,7 @@ Siehe auch: link:quarkus-add-jdbc-postgres-source[Quarkus: JDBC Datasource hinzu
 
 === Eigene Health-Checks erstellen
 
-Es ist auch möglich in Quarkus eigene Health-Checks zu erstellen.
+Quarkus bietet die Möglichkeit, eigene Health-Checks zu erstellen.
 Dabei implementiert deine Health-Check-Klasse das Interface `HealthCheck` und trägt die `@Liveness`, `@Readiness` oder `@Startup` Annotation - je nach dem welche Art von Health-Check gefordert ist.
 
 ==== Beispiel mit einer Readiness Health-Check Prozedur
@@ -485,6 +488,8 @@ kubectl apply -f quarkus-app.yaml
 kubectl apply -f quarkus-ingress.yaml
 ----
 
+TIP: Du kannst den Status der Deployments/Pods/Ingresses z.B. mit `watch -n 2 kubectl get pods|deployments|ingress` beobachten.
+
 === *Was macht Kubernetes nun, wenn eine der Probes fehlschlägt?*
 
 [options="header"]
@@ -492,8 +497,11 @@ kubectl apply -f quarkus-ingress.yaml
 | Probe         | Prüft was?                        | Verhalten bei Fehlschlag
 | Liveness      | Läuft die App noch oder ist sie abgestürzt? | *Container wird als "unhealthy" markiert.* Nach `failureThreshold` Fehlschlägen startet Kubernetes den Container neu.
 | Readiness     | Kann die App Anfragen verarbeiten? | *Container bleibt am Leben, aber erhält keinen Traffic mehr.* Sobald die Probe wieder erfolgreich ist, wird der Container wieder in den Load Balancer aufgenommen.
-| Startup       | Ist die App noch im Startprozess? | *Solange die Startup Probe fehlschlägt, ignoriert Kubernetes Liveness und Readiness.* Erst wenn die Startup Probe erfolgreich ist, starten die anderen Probes.
+| Startup       | Ist die App noch im Startprozess? | *Solange die Startup Probe fehlschlägt, werden die Readiness- & Liveness-Probes ignoriert.* Erst wenn die Startup Probe erfolgreich ist, starten die anderen Probes.
 |===
+
+.Kubernetes Probes Workflow (https://images.prismic.io/qovery/65ddb31a3a605798c18c52f9_unnamed-20-.png?auto=format,compress)
+image::k8s-probes.png[]
 
 
 == Begriffsklärung
@@ -503,6 +511,8 @@ kubectl apply -f quarkus-ingress.yaml
 == Quellen und Links
 * https://quarkus.io/guides/smallrye-health[quarkus.io: SmallRye Health]
 * https://github.com/smallrye/smallrye-health[GitHub: SmallRye Health]
+* https://smallrye.io/docs/smallrye-health/3.0.1/index.html[SmallRye Health Documentation]
+* https://microprofile.io/[microprofile.io]
 * https://github.com/eclipse/microprofile-health/[GitHub: Eclipse MicroProfile Health]
 * https://cloud.htl-leonding.ac.at/html/user-manual.html[C. Aberger: LeoCloud User Manual]
 * https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/[kubernetes.io: Configure Liveness, Readiness and Startup Probes]
